@@ -56,9 +56,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         (ROLE_SYSTEM, 'System'),
         (ROLE_Customer, 'Customer'),
     ]
-    # email = models.EmailField(_('email address'), unique=True)
-    # user_name = models.CharField(max_length=150, unique=True)
-
     # start_date = models.DateTimeField(default=timezone.now)
     email = models.EmailField(verbose_name="email", max_length=60, unique=True)
     user_name = models.CharField(max_length=30, unique=True)
@@ -68,8 +65,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     last_login = models.DateTimeField(verbose_name="last login", auto_now=True)
     role = models.CharField(max_length=1, choices=ROLE_CHOICES, default=ROLE_Customer)
     # is_admin = models.BooleanField()
-    # is_active = models.BooleanField(default=True)
-    # is_staff = models.BooleanField()
     # is_superuser = models.BooleanField()
     about = models.TextField(_(
         'about'), max_length=500, blank=True)

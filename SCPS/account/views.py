@@ -23,6 +23,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['email'] = user.email
         token['password'] = user.password
         token['user_id'] = user.id
+        token['user_name'] = user.user_name
         return token
 
 

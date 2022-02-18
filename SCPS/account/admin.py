@@ -7,6 +7,7 @@ from django.db import models
 
 
 class UserAdminConfig(UserAdmin):
+
     model = CustomUser
     search_fields = ('email', 'user_name', 'first_name',)
     list_filter = ('email', 'user_name', 'first_name', 'is_active', 'is_staff')
