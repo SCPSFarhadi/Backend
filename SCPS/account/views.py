@@ -1,6 +1,9 @@
+from django.contrib.auth.views import LogoutView
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
-from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework import status, authentication, generics, permissions
+from rest_framework.decorators import permission_classes, api_view
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -10,7 +13,7 @@ from .models import CustomUser
 
 
 # Create your views here.
-from .serializers import CustomUserSerializer
+from .serializers import CustomUserSerializer, LogoutSerializer
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -56,3 +59,17 @@ class BlacklistTokenUpdateView(APIView):
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class LogoutAPIView(generics.GenericAPIView):
+    serializer_class = LogoutSerializer
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
