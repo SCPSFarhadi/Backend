@@ -1,11 +1,14 @@
+from datetime import timedelta
 from functools import partial
+from unittest import mock
 
 from rest_framework.test import APITestCase
 from rest_framework.reverse import reverse
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.utils import aware_utcnow
 
-# from apps.account.models import User
+from SCPS.account.models import CustomUser
 
 
 class TestLoginCase(APITestCase):
@@ -17,8 +20,12 @@ class TestLoginCase(APITestCase):
     email = 'test@user.com'
     password = 'kah2ie3urh4k'
 
+    def __init__(self, methodName: str = ...):
+        super().__init__(methodName)
+        self.profile_url = None
+
     def setUp(self):
-        self.user = User.objects.create_user(self.email, self.password)
+        self.user = CustomUser.objects.create_user(self.email, self.password)
 
     def _login(self):
         data = {
@@ -61,13 +68,13 @@ class TestLoginCase(APITestCase):
         self.assertEquals(r.status_code, 200, body)
         self.assertTrue(body, body)
 
-    # def test_access_token_invalid_in_hour_after_logout(self):
-    #     _, body = self._login()
-    #     self.client.post(self.logout_url, body)
-    #     m = mock.Mock()
-    #     m.return_value = aware_utcnow() + timedelta(minutes=60)
-    #     with mock.patch('rest_framework_simplejwt.tokens.aware_utcnow', m):
-    #         r = self.client.get(self.profile_url)
-    #         body = r.json()
-    #     self.assertEquals(r.status_code, 401, body)
-    #     self.assertTrue(body, body)
+    def test_access_token_invalid_in_hour_after_logout(self):
+        _, body = self._login()
+        self.client.post(self.logout_url, body)
+        m = mock.Mock()
+        m.return_value = aware_utcnow() + timedelta(minutes=60)
+        with mock.patch('rest_framework_simplejwt.tokens.aware_utcnow', m):
+            r = self.client.get(self.profile_url)
+            body = r.json()
+        self.assertEquals(r.status_code, 401, body)
+        self.assertTrue(body, body)
