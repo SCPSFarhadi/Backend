@@ -191,3 +191,5 @@ widgetsnbextension==3.5.2
 xkit==0.0.0
 youtube-dl==2020.3.24
 zipp==3.7.0
+
+channels~=3.0.4

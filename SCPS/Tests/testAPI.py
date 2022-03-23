@@ -35,7 +35,7 @@ class TestLoginCase(APITestCase):
         body = r.json()
         if 'access' in body:
             self.client.credentials(
-                HTTP_AUTHORIZATION='Bearer %s' % body['access'])
+                HTTP_AUTHORIZATION='JWT %s' % body['access'])
         return r.status_code, body
 
     def test_logout_response_200(self):

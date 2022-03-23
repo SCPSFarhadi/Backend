@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'account',
     'API',
+    'chat',
+    'channels',
     'corsheaders',
     'rest_framework_simplejwt.token_blacklist',
 ]
@@ -74,7 +76,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'SCPS.wsgi.application'
-
+ASGI_APPLICATION = 'SCPS.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
