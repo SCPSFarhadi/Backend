@@ -27,5 +27,5 @@ urlpatterns = [
 
     path('api/users/', include('account.urls')),
     path('api/data/', include('API.urls')),
-    path('chat/', include('chat.urls')),
+    path('chat/', include('chat.urls', namespace='chat')),
 ]
