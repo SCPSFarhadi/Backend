@@ -38,5 +38,50 @@ class Notification(models.Model):
             }
         )
 
-        super(Notification, self).save(*args,**kwargs)
+        super(Notification, self).save(*args, **kwargs)
+
+
+class Node(models.Model):
+    id = models.AutoField(primary_key=True)
+    setT = models.CharField(max_length=200)
+    node_state = models.CharField(max_length=200)
+    fanCoilTem = models.CharField(max_length=200)
+    homeTem = models.CharField(max_length=200)
+    Time = models.CharField(max_length=200,default="none")
+    neighbors = models.CharField(max_length=400)
+
+    def save(self, *args, **kwargs):
+        super(Node, self).save(*args, **kwargs)
+        channel_layer = get_channel_layer()
+        node_objs = list(Node.objects.all().values("id", "neighbors","node_state"))
+        data = json.dumps(node_objs)
+        async_to_sync(channel_layer.group_send)(
+            'chat_test',  # group _ name
+            {
+                'type': 'chat_message',
+                'message': json.dumps(data)
+            }
+        )
+
+
+class State(models.Model):
+    id = models.AutoField(primary_key=True)
+    Node = models.ForeignKey(Node, on_delete=models.CASCADE)
+    DateTime = models.CharField(max_length=200)
+    temperature = models.CharField(max_length=200)
+
+    def save(self, *args, **kwargs):
+        super(State, self).save(*args, **kwargs)
+        channel_layer = get_channel_layer()
+        state_objs = list(State.objects.all().values("DateTime", "temperature","Node__id"))
+        # state_objs.append(a)
+        data = json.dumps(state_objs)
+        async_to_sync(channel_layer.group_send)(
+            'chat_test',  # group _ name
+            {
+                'type': 'chat_message',
+                'message': json.dumps(data)
+            }
+        )
+
 

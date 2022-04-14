@@ -62,6 +62,7 @@ class BlacklistTokenUpdateView(APIView):
 
 
 class LogoutAPIView(generics.GenericAPIView):
+    print("in logout")
     serializer_class = LogoutSerializer
 
     permission_classes = (permissions.IsAuthenticated,)
