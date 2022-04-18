@@ -26,23 +26,41 @@ class ChatConsumer(WebsocketConsumer):
 
     # Receive message from WebSocket
     def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
+        try:
+            text_data_json = json.loads(text_data)
+            message = text_data_json['message']
 
-        print(str(text_data_json) + "      " + self.room_group_name)
-        # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': message
-            }
-        )
+            print(str(text_data_json) + "      " + self.room_group_name)
+            # Send message to room group
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'message': message
+                }
+            )
+        except:
+            print("error in parsing message")
 
     # Receive message from room group
     def chat_message(self, event):
         message = event['message']
+        # Send message to WebSocket
+        self.send(text_data=json.dumps({
+            'type': event['type'],
+            'message': message
+        }))
 
+    def graph_config(self, event):
+        message = event['message']
+        # Send message to WebSocket
+        self.send(text_data=json.dumps({
+            'type': event['type'],
+            'message': message
+        }))
+
+    def node_state(self, event):
+        message = event['message']
         # Send message to WebSocket
         self.send(text_data=json.dumps({
             'type': event['type'],
@@ -51,9 +69,7 @@ class ChatConsumer(WebsocketConsumer):
 
     def send_notification(self, event):
         print("in notifications")
-        print(event)
         self.send(text_data=json.dumps({
             'type': event['type'],
             'message': event['value']
         }))
-

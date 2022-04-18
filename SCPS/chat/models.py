@@ -42,7 +42,7 @@ class Notification(models.Model):
 
 
 class Node(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.IntegerField(primary_key=True)
     setT = models.CharField(max_length=200)
     node_state = models.CharField(max_length=200)
     fanCoilTem = models.CharField(max_length=200)
@@ -58,11 +58,13 @@ class Node(models.Model):
         async_to_sync(channel_layer.group_send)(
             'chat_test',  # group _ name
             {
-                'type': 'chat_message',
+                'type': 'graph_config',
                 'message': json.dumps(data)
             }
         )
 
+    def __str__(self):
+        return str(self.id)
 
 class State(models.Model):
     id = models.AutoField(primary_key=True)
@@ -79,9 +81,10 @@ class State(models.Model):
         async_to_sync(channel_layer.group_send)(
             'chat_test',  # group _ name
             {
-                'type': 'chat_message',
+                'type': 'node_state',
                 'message': json.dumps(data)
             }
         )
 
-
+    def __str__(self):
+        return str(self.id)

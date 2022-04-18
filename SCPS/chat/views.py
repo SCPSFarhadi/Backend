@@ -25,7 +25,7 @@ class RecieveDataGraph(APIView):
 
     def post(self, request):
         print(request.data)
-        serializer = NodeState(data=request.data)
+        serializer = GraphSetting(data=request.data)
         if serializer.is_valid():
             print("data validated")
             serializer.save()

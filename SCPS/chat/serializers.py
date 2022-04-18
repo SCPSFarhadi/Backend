@@ -17,6 +17,7 @@ class NodeState(serializers.ModelSerializer):
         fields = '__all__'
 
     def to_representation(self, instance):
+        print(instance)
         representation = dict()
         representation["id"] = instance.id
         representation["Node"] = instance.Node.id
