@@ -130,6 +130,7 @@ def ReciveMqtt2(z):
         Securitys.Name=t["name"]
         Securitys.Value=t["value"]
         Securitys.save()
+    pychart(z)
 
 
 def on_connect(client,userdata,flags,rc):
