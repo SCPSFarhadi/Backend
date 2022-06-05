@@ -33,7 +33,7 @@ class Notification(models.Model):
         async_to_sync(channel_layer.group_send)(
             'chat_test',  # group _ name
             {
-                'type': 'chat_message',
+                'type': 'not_message',
                 'message': json.dumps(data)
             }
         )

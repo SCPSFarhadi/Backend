@@ -1,5 +1,5 @@
 from argparse import Action
-from msilib.schema import Control
+# from msilib.schema import Control
 from django.db import models
 
 # Create your models here.
