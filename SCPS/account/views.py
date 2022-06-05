@@ -64,9 +64,15 @@ def errorws(z):
         
         
 def pychart(z):
-    l=z["data"].lenght()
-    w=z["errors"].lenght()
-    p=Node.objects.all().lenght()
+    l=0
+    w=0
+    p=0
+    for i in z["data"]:
+        l=l+1
+    for i in z["errors"]:
+        w=w+1
+    for i in Node.objects.all():
+        p=p+1
     active=((l-w)/p)*100
     deactive=(w/p)*100
     onhold=((p-l)/p)*100
@@ -77,7 +83,7 @@ def pychart(z):
     mymessage.append(l)
     l={'name':'Group C','value':str(onhold)}
     mymessage.append(l)
-    data={mymessage}
+    data=mymessage
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         'chat_test',  # group _ name
