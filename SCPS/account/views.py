@@ -20,6 +20,7 @@ from .serializers import CustomUserSerializer, LogoutSerializer
 import logging
 import threading
 import time
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -93,6 +94,22 @@ def pychart(z):
         }
     )
     
+def roomTem(z):
+    sum=0
+    counter=0
+    for t in z["data"]:
+        sum=sum + float(t["homeT"])
+        counter=counter+1
+    Avg=sum/counter
+    data={'date':str(timezone.now()),'tem':Avg}
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        'chat_test',  # group _ name
+        {
+            'type': 'roomTem',
+            'message': json.dumps(data)
+        }
+    )
 
 def ReciveMqtt1(z):
     for t in z["graph"]:
@@ -137,6 +154,7 @@ def ReciveMqtt2(z):
         Securitys.Value=t["value"]
         Securitys.save()
     pychart(z)
+    roomTem(z)
 
 
 def on_connect(client,userdata,flags,rc):

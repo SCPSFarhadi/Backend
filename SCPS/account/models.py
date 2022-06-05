@@ -1,5 +1,5 @@
 from argparse import Action
-# from msilib.schema import Control
+#from msilib.schema import Control
 from django.db import models
 
 # Create your models here.
@@ -138,8 +138,6 @@ class NodeStation(models.Model):
     status=models.BooleanField(null=True, blank=True)
     faucetState=models.CharField(max_length=100,null=True, blank=True)
     SetPointTemperature=models.FloatField(null=True,blank=True)
-    
-    
 class Neighbor(models.Model):
     Node1=models.ForeignKey(Node,on_delete=models.CASCADE,related_name='Neighbor1')
     Node2=models.ForeignKey(Node,on_delete=models.CASCADE)
