@@ -129,7 +129,7 @@ class Node(models.Model):
     status=models.BooleanField(null=True, blank=True)
     
 class NodeStation(models.Model):
-    DateTime=models.DateTimeField(auto_now_add=True)
+    DateTime=models.DateTimeField()
     Node=models.ForeignKey(Node,on_delete=models.CASCADE)
     Presence=models.BooleanField(null=True, blank=True)
     ErrorId=models.IntegerField(null=True, blank=True)
