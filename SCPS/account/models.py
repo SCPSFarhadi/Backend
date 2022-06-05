@@ -1,3 +1,5 @@
+from argparse import Action
+from msilib.schema import Control
 from django.db import models
 
 # Create your models here.
@@ -118,3 +120,53 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 #
 #     def has_module_perms(self, app_label):
 #         return True
+
+class Node(models.Model):
+    ErrorId=models.IntegerField(null=True, blank=True)
+    MacAddress=models.CharField(max_length=100,null=True,blank=True)
+    SetPointTemperature=models.FloatField(null=True,blank=True)
+    ControlStatus=models.BooleanField(null=True, blank=True)
+    status=models.BooleanField(null=True, blank=True)
+    
+class NodeStation(models.Model):
+    DateTime=models.DateTimeField(auto_now_add=True)
+    Node=models.ForeignKey(Node,on_delete=models.CASCADE)
+    Presence=models.BooleanField(null=True, blank=True)
+    ErrorId=models.IntegerField(null=True, blank=True)
+    FanCoilTemperature=models.FloatField(null=True,blank=True)
+    HomeTemperature=models.FloatField(null=True, blank=True)
+    status=models.BooleanField(null=True, blank=True)
+    faucetState=models.CharField(max_length=100,null=True, blank=True)
+    SetPointTemperature=models.FloatField(null=True,blank=True)
+    
+    
+class Neighbor(models.Model):
+    Node1=models.ForeignKey(Node,on_delete=models.CASCADE,related_name='Neighbor1')
+    Node2=models.ForeignKey(Node,on_delete=models.CASCADE)
+    RSSI=models.FloatField(null=True,blank=True)
+
+
+class Allocation(models.Model):
+    userId=models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    NodeId=models.ForeignKey(Node,on_delete=models.CASCADE)
+    StartDate=models.DateField(null=True, blank=True)
+    EndDate=models.DateTimeField(null=True, blank=True)
+    
+class UserNode(models.Model):
+    DateTime=models.DateTimeField(auto_now_add=True)
+    Action=models.CharField(max_length=100,null=True, blank=True)
+    
+class Security(models.Model):
+    Name=models.CharField(max_length=100)
+    Value=models.CharField(max_length=100,null=True,blank=True)
+    
+class SecurityStation(models.Model):
+    Name=models.CharField(max_length=100)
+    Value=models.BooleanField()
+    DateTime=models.DateTimeField(auto_now_add=True)
+    
+        
+    
+    
+    
+    
