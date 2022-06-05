@@ -130,7 +130,7 @@ def ReciveMqtt2(z):
         node2=Node.objects.get(MacAddress=t["id"])
         node2.ErrorId=t["code"]
         node2.save()
-        errorws(z)
+    errorws(z)
     for t in z["security"]:
         Securitys=SecurityStation()
         Securitys.Name=t["name"]
