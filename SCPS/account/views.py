@@ -110,6 +110,18 @@ def roomTem(z):
             'message': json.dumps(data)
         }
     )
+    
+def nodeNewTem(z):
+    for t in z["data"]:
+        data={'nodeid':str(t["id"]),'time':str(timezone.now()),'temp':t["homeT"]}
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'chat_test',  # group _ name
+            {
+                'type': 'nodeNewTem',
+                'message': json.dumps(data)
+            }
+        )
 
 def ReciveMqtt1(z):
     for t in z["graph"]:
