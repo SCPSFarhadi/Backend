@@ -137,11 +137,11 @@ def pychart(z):
     deactive=(w/p)*100
     onhold=((p-l)/p)*100
     mymessage=[]
-    l={'name':'Group A','value':str(active)}
+    l={'name':'Group A','value':active}
     mymessage.append(l)
-    l={'name':'Group B','value':str(deactive)}
+    l={'name':'Group B','value':deactive}
     mymessage.append(l)
-    l={'name':'Group C','value':str(onhold)}
+    l={'name':'Group C','value':onhold}
     mymessage.append(l)
     data=mymessage
     channel_layer = get_channel_layer()
