@@ -355,7 +355,7 @@ class sendLastData(APIView):
                 d=i.DateTime
                 counter=1
                 sum=i.HomeTemperature
-                
+        return Response(status=status.HTTP_200_OK)
     def post(self,request):          
         NodeArray=Node.objects.all()
         print(str(NodeArray))
