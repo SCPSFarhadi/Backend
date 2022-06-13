@@ -361,22 +361,14 @@ class sendLastData(APIView):
         print(str(NodeArray))
         for i in NodeArray:
             if i.MacAddress==request.data["nodeid"]:   
-                NodeStationArray=NodeStation.objects.filter(Node=i)
+                NodeStationArray=NodeStation.objects.filter(Node=i).order_by("DateTime")
                 times=[]
                 temps=[]
                 for z in NodeStationArray:
                     times.append(str(z.DateTime))
                     temps.append(str(z.HomeTemperature))
                 data={'nodeid':str(i.MacAddress),'times':times,'temps':temps}
-                channel_layer = get_channel_layer()
-                async_to_sync(channel_layer.group_send)(
-                    'chat_test',  # group _ name
-                    {
-                        'type': 'nodeTem',
-                        'message': json.dumps(data)
-                    }
-                )
-        return Response(status=status.HTTP_200_OK)
+        return Response(data=data,status=status.HTTP_200_OK)
         
 
 class MqttRunCommand(APIView):
