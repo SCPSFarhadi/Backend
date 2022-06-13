@@ -355,19 +355,23 @@ class sendLastData(APIView):
                 d=i.DateTime
                 counter=1
                 sum=i.HomeTemperature
-        return Response(status=status.HTTP_200_OK)
-    def post(self,request):
-        NodeId=Node.objects.filter(id="nodeid")       
-        NodeStationArray=NodeStation.objects.filter(Node=NodeId).order_by('DateTime')
-        times=[]
-        temps=[]
-        for z in NodeStationArray:
-            times.append(z.DateTime)
-            temps.append(z.HomeTemperature)
-        data={'nodeid':str(NodeId.MacAddress),'times':times,'temps':temps}
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            'chat_test',  # group _ name
+                
+        NodeArray=Node.objects.all()
+        print(str(NodeArray))
+        for i in NodeArray:
+        
+            NodeStationArray=NodeStation.objects.filter(Node=i)
+            o=[]
+            for z in NodeStationArray:
+                p={
+                    'time':str(z.DateTime),
+                    'temp':str(z.HomeTemperature)
+                }
+                o.append(p)
+            data={'nodeid':str(i.MacAddress),'data':o}
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                'chat_test',  # group _ name
                 {
                     'type': 'nodeTem',
                     'message': json.dumps(data)
