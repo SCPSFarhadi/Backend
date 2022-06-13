@@ -241,7 +241,7 @@ def ReciveMqtt2(z):
 
 def on_connect(client,userdata,flags,rc):
     print("Connected to broker!")
-    client.subscribe("hasan/test2")
+    client.subscribe("scps/client")
     
 def on_message(client,userdata,message):
     l=message.payload.decode()
@@ -257,7 +257,7 @@ def MqttRun():
     client.on_connect=on_connect
     client.on_message=on_message
     client.connect('broker.emqx.io',1883)
-    client.subscribe("hasan/test2")
+    client.subscribe("scps/client")
     client.loop_forever()
     
 
@@ -371,6 +371,21 @@ class sendLastData(APIView):
         return Response(data=data,status=status.HTTP_200_OK)
         
 
+class SetConfigNode(APIView):
+    permission_classes=[AllowAny]
+    def post(self, request):
+        MyNode=Node.objects.get(MacAddress=request.data["nodeid"])
+        MyNode.SetPointTemperature=request.data["temp"]
+        if request.data["fanopen"]=="yes":
+            MyNode.status=True
+        elif request.data["fanopen"]=="no":
+            MyNode.status=False
+        MyNode.status=request.data["fanopen"]
+        if request.data["perm"]=="yes":
+            MyNode.ControlStatus=True
+        elif request.data["perm"]=="no":
+            MyNode.ControlStatus=False
+        MyNode.save()
 class MqttRunCommand(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
