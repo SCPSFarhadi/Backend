@@ -216,10 +216,16 @@ def ReciveMqtt2(z):
         nodeid=t["id"]
         node=Node.objects.get(MacAddress=nodeid)
         nodes.Node=node
-        nodes.FanCoilTemperature=t["fancoilT"]
+        s=0
+        l=0
+        for u in t["fancoil"]:
+            s=s+u
+            l=l+1
+        f=s/l
+        nodes.FanCoilTemperature=f
         nodes.HomeTemperature=t["homeT"]
         nodes.Presence=t["present"]
-        nodes.faucetState=t["faucetState"]
+        #nodes.faucetState=t["faucetState"]
         nodes.SetPointTemperature=t["setT"]
         nodes.DateTime = now
         nodes.save()
@@ -228,18 +234,18 @@ def ReciveMqtt2(z):
         node2.ErrorId=t["code"]
         node2.save()
     errorws(z)
-    for t in z["security"]:
-        Securitys=SecurityStation()
-        Securitys.Name=t["name"]
-        Securitys.Value=t["value"]
-        Securitys.save()
+   # for t in z["security"]:
+    #    Securitys=SecurityStation()
+     #   Securitys.Name=t["name"]
+      #  Securitys.Value=t["value"]
+       # Securitys.save()
     pychart(z)
     roomTem(z)
     nodeNewTem(z)
     
 
 
-def on_connect(client,userdata,flags,rc):
+def on_connect(client, userdata, flags, rc):
     print("Connected to broker!")
     client.subscribe("scps/client")
     
@@ -256,7 +262,7 @@ def on_message(client,userdata,message):
 def MqttRun():
     client.on_connect=on_connect
     client.on_message=on_message
-    client.connect('broker.emqx.io',1883)
+    client.connect('mqtt.fluux.io',1883)
     client.subscribe("scps/client")
     client.loop_forever()
     
@@ -374,18 +380,43 @@ class sendLastData(APIView):
 class SetConfigNode(APIView):
     permission_classes=[AllowAny]
     def post(self, request):
+        a=0
+        b=0
+        dictsend={}
         MyNode=Node.objects.get(MacAddress=request.data["nodeid"])
         MyNode.SetPointTemperature=request.data["temp"]
         if request.data["fanopen"]=="yes":
             MyNode.status=True
+            a=1
         elif request.data["fanopen"]=="no":
             MyNode.status=False
-        MyNode.status=request.data["fanopen"]
+            a=0
         if request.data["perm"]=="yes":
             MyNode.ControlStatus=True
+            b=1
         elif request.data["perm"]=="no":
             MyNode.ControlStatus=False
+            b=0
         MyNode.save()
+        client =mqtt.Client()
+        dictsend={
+    "type": "33",
+    "time": "568595",
+    "conf": [
+        {
+            "id": str(MyNode.MacAddress),
+            "setT": MyNode.SetPointTemperature,
+            "controlstate": b,
+            "workstate" : a
+        }
+    ],
+   "equ":{}
+} 
+        json_object =json.dumps(dictsend)
+        print(json_object)
+        client.connect('mqtt.fluux.io',1883)
+        client.publish('scps/server',json_object)
+        return Response(status=status.HTTP_200_OK)
 class MqttRunCommand(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
