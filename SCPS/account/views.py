@@ -201,7 +201,7 @@ def ReciveMqtt1(z):
             h.Node2=node2
             h.RSSI=rssi
             h.save()
-            o=n["nums"]
+            o=t["nums"]
             u=0
             while u<o:
                 l=FanCoil()
@@ -255,7 +255,7 @@ def ReciveMqtt2(z):
 
 def on_connect(client, userdata, flags, rc):
     print("Connected to broker!")
-    client.subscribe("scps/client")
+    client.subscribe("scps/server")
     
 def on_message(client,userdata,message):
     l=message.payload.decode()
@@ -271,7 +271,7 @@ def MqttRun():
     client.on_connect=on_connect
     client.on_message=on_message
     client.connect('84.241.60.84',1883)
-    client.subscribe("scps/client")
+    client.subscribe("scps/server")
     client.loop_forever()
     
 
@@ -438,6 +438,8 @@ class SetConfigNode(APIView):
         {
             "id": str(MyNode.MacAddress),
             "setT": MyNode.SetPointTemperature,
+            "valve_command":valve_cammand,
+            "workmode":c,
             "permission": b,
             "hvac":1,
             "fan_command" : a
@@ -447,7 +449,7 @@ class SetConfigNode(APIView):
 } 
         json_object =json.dumps(dictsend)
         print(json_object)
-        client.connect('mqtt.fluux.io',1883)
+        client.connect('84.241.60.84',1883)
         client.publish('scps/server',json_object)
         return Response(status=status.HTTP_200_OK)
 class MqttRunCommand(APIView):
