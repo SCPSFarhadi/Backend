@@ -270,7 +270,7 @@ def on_message(client,userdata,message):
 def MqttRun():
     client.on_connect=on_connect
     client.on_message=on_message
-    client.connect('mqtt.fluux.io',1883)
+    client.connect('84.241.60.84',1883)
     client.subscribe("scps/client")
     client.loop_forever()
     
