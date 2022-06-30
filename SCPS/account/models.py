@@ -125,9 +125,9 @@ class Node(models.Model):
     ErrorId=models.IntegerField(null=True, blank=True)
     MacAddress=models.CharField(max_length=100,null=True,blank=True)
     SetPointTemperature=models.FloatField(null=True,blank=True)
-    ControlStatus=models.BooleanField(null=True, blank=True)
+    permissions=models.BooleanField(null=True, blank=True)
     status=models.BooleanField(null=True, blank=True)
-    
+    mode=models.CharField(max_length=500,null=True, blank=True)
 class NodeStation(models.Model):
     DateTime=models.DateTimeField()
     Node=models.ForeignKey(Node,on_delete=models.CASCADE)
@@ -163,8 +163,17 @@ class SecurityStation(models.Model):
     Value=models.BooleanField()
     DateTime=models.DateTimeField(auto_now_add=True)
     
-        
-    
-    
+class FanCoil(models.Model):
+    Node=models.ForeignKey(Node,on_delete=models.CASCADE)
+    valv=models.BooleanField(null=True, blank=True)
+    valvstate=models.BooleanField(null=True, blank=True)
+    Temperature=models.FloatField(null=True, blank=True)
+
+class FanCoilStation(models.Model):
+    FanCoilId=models.ForeignKey(FanCoil,on_delete=models.CASCADE)
+    valv=models.BooleanField(null=True, blank=True)
+    valvstate=models.BooleanField(null=True, blank=True)
+    Temperature=models.FloatField(null=True, blank=True)
+   
     
     

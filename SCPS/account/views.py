@@ -1,4 +1,3 @@
-from functools import cache
 from django.contrib.auth.views import LogoutView
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
@@ -10,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import CustomUser, Node, NodeStation, Neighbor, Allocation, UserNode, Security, SecurityStation
+from .models import CustomUser, Node, NodeStation, Neighbor, Allocation, UserNode, Security, SecurityStation,FanCoil
 import json
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -202,6 +201,15 @@ def ReciveMqtt1(z):
             h.Node2=node2
             h.RSSI=rssi
             h.save()
+            o=n["nums"]
+            u=0
+            while u<o:
+                l=FanCoil()
+                l.Node=Node.objects.get(MacAddress=nodeid1)
+                u=u+1
+                l.save()
+        
+
     Graphws(z)
             
             
@@ -382,6 +390,8 @@ class SetConfigNode(APIView):
     def post(self, request):
         a=0
         b=0
+        c=-1
+        valve_cammand=[]
         dictsend={}
         MyNode=Node.objects.get(MacAddress=request.data["nodeid"])
         MyNode.SetPointTemperature=request.data["temp"]
@@ -397,6 +407,28 @@ class SetConfigNode(APIView):
         elif request.data["perm"]=="no":
             MyNode.ControlStatus=False
             b=0
+        if request.data["sleepMode"]==True:
+            MyNode.mode="sleepMode"
+            MyNode.status=False
+            c=0
+            a=0
+        if request.data["optimalMode"]==True:
+            MyNode.mode="optimalMode"
+            c=1
+        if request.data["manualMode"]==True:
+            MyNode.mode="manualMode"
+            c=2
+        NodeArray=Node.objects.all()
+        print(str(NodeArray))
+        for i in NodeArray:
+            if i.MacAddress==request.data["nodeid"]:   
+                NodeStationArray=FanCoil.objects.filter(Node=i)
+                o=1
+                for z in NodeStationArray:
+                    valve_cammand.append(request.data["valve"+str(o)])
+                    z.valv=request.data["valve"+str(o)]
+                    o=o+1
+                    z.save()  
         MyNode.save()
         client =mqtt.Client()
         dictsend={
@@ -406,8 +438,9 @@ class SetConfigNode(APIView):
         {
             "id": str(MyNode.MacAddress),
             "setT": MyNode.SetPointTemperature,
-            "controlstate": b,
-            "workstate" : a
+            "permission": b,
+            "hvac":1,
+            "fan_command" : a
         }
     ],
    "equ":{}
@@ -424,6 +457,4 @@ class MqttRunCommand(APIView):
         x.start()
         return Response(status=status.HTTP_200_OK)
 
-
-    
     
