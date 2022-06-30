@@ -215,9 +215,9 @@ def ReciveMqtt1(z):
             
 def ReciveMqtt2(z):
     mynow=timezone.now()
-    k=gregorian_to_jalali(mynow.year,mynow.month,mynow.day) 
-    now=datetime.now() 
-    now=datetime(k[0],k[1],k[2],mynow.hour,mynow.minute,mynow.second)
+#    k=gregorian_to_jalali(mynow.year,mynow.month,mynow.day) 
+#    now=datetime.now() 
+#    now=datetime(k[0],k[1],k[2],mynow.hour,mynow.minute,mynow.second)
     print()
     for t in z["data"]:
         nodes=NodeStation()
@@ -226,7 +226,8 @@ def ReciveMqtt2(z):
         nodes.Node=node
         s=0
         l=0
-        for u in t["fancoil"]:
+        FanCoils=FanCoil.objects.get()
+        for u in t["fancoilT"]:
             s=s+u
             l=l+1
         f=s/l
@@ -235,7 +236,7 @@ def ReciveMqtt2(z):
         nodes.Presence=t["present"]
         #nodes.faucetState=t["faucetState"]
         nodes.SetPointTemperature=t["setT"]
-        nodes.DateTime = now
+        nodes.DateTime = mynow
         nodes.save()
     for t in z["errors"]:
         node2=Node.objects.get(MacAddress=t["id"])
@@ -425,6 +426,8 @@ class SetConfigNode(APIView):
                 NodeStationArray=FanCoil.objects.filter(Node=i)
                 o=1
                 for z in NodeStationArray:
+                    if o>3:
+                        o=3
                     valve_cammand.append(request.data["valve"+str(o)])
                     z.valv=request.data["valve"+str(o)]
                     o=o+1
