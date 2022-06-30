@@ -203,6 +203,8 @@ def ReciveMqtt1(z):
             h.save()
             o=t["nums"]
             u=0
+            if Node.objects.filter(MacAddress=nodeid1).count()>o:
+                o=Node.objects.filter(MacAddress=nodeid1).count()-o
             while u<o:
                 l=FanCoil()
                 l.Node=Node.objects.get(MacAddress=nodeid1)
@@ -227,10 +229,14 @@ def ReciveMqtt2(z):
         s=0
         l=0
         FanCoils=FanCoil.objects.get()
+        x=FanCoil.objects.filter(Node=node)
         for u in t["fancoilT"]:
+            x[l].Temperature=u
             s=s+u
             l=l+1
         f=s/l
+        for u in t["valveState"]:
+            x[l].valvstate=u
         nodes.FanCoilTemperature=f
         nodes.HomeTemperature=t["homeT"]
         nodes.Presence=t["present"]
@@ -242,7 +248,7 @@ def ReciveMqtt2(z):
         node2=Node.objects.get(MacAddress=t["id"])
         node2.ErrorId=t["code"]
         node2.save()
-    errorws(z)
+   # errorws(z)
    # for t in z["security"]:
     #    Securitys=SecurityStation()
      #   Securitys.Name=t["name"]
@@ -272,7 +278,7 @@ def MqttRun():
     client.on_connect=on_connect
     client.on_message=on_message
     client.connect('84.241.60.84',1883)
-    client.subscribe("scps/server")
+    client.subscribe("scps/client")
     client.loop_forever()
     
 
@@ -396,16 +402,16 @@ class SetConfigNode(APIView):
         dictsend={}
         MyNode=Node.objects.get(MacAddress=request.data["nodeid"])
         MyNode.SetPointTemperature=request.data["temp"]
-        if request.data["fanopen"]=="yes":
+        if request.data["fanopen"]==True:
             MyNode.status=True
             a=1
-        elif request.data["fanopen"]=="no":
+        elif request.data["fanopen"]==False:
             MyNode.status=False
             a=0
-        if request.data["perm"]=="yes":
+        if request.data["perm"]=="YES":
             MyNode.ControlStatus=True
             b=1
-        elif request.data["perm"]=="no":
+        elif request.data["perm"]=="NO":
             MyNode.ControlStatus=False
             b=0
         if request.data["sleepMode"]==True:
