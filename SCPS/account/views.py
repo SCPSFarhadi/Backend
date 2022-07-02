@@ -22,11 +22,15 @@ import threading
 import time
 from django.utils import timezone
 from datetime import datetime
-
+from SCPS import settings
+import redis
 User = get_user_model()
 
 # Create your views here.
 client = mqtt.Client()
+
+redis_instance = redis.StrictRedis(host=settings.REDIS_HOST,
+                                  port=settings.REDIS_PORT, db=0)
 
 def gregorian_to_jalali(gy, gm, gd):
  g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
