@@ -502,7 +502,7 @@ class graphNodes(APIView):
                     'source': str(n.Node1.MacAddress),
                     'target': str(n.Node2.MacAddress)
                 }
-                links.append(o)
+                #links.append(o)
         data = {'graph': nodes, 'links': links}
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
