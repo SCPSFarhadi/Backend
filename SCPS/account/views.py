@@ -275,7 +275,7 @@ def ReciveMqtt2(z):
     #    k=gregorian_to_jalali(mynow.year,mynow.month,mynow.day)
     #    now=datetime.now()
     #    now=datetime(k[0],k[1],k[2],mynow.hour,mynow.minute,mynow.second)
-    print()
+    print(z)
     for t in z["data"]:
         nodes = NodeStation()
         nodeid = t["id"]
