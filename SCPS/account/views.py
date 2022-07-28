@@ -283,16 +283,16 @@ def ReciveMqtt2(z):
         nodes.Node = node
         s = 0
         l = 0
-        FanCoils = FanCoil.objects.get()
-        x = FanCoil.objects.filter(Node=node)
-        for u in t["fancoilT"]:
-            x[l].Temperature = u
-            s = s + u
-            l = l + 1
-        f = s / l
-        for u in t["valveState"]:
-            x[l].valvstate = u
-        nodes.FanCoilTemperature = f
+        #FanCoils = FanCoil.objects.get()
+        #x = FanCoil.objects.filter(Node=node)
+        #for u in t["fancoilT"]:
+        #    x[l].Temperature = u
+        #    s = s + u
+        #    l = l + 1
+        #f = s / l
+        #for u in t["valveState"]:
+        #    x[l].valvstate = u
+        nodes.FanCoilTemperature = 154#f
         nodes.HomeTemperature = t["homeT"]
         nodes.Presence = t["present"]
         # nodes.faucetState=t["faucetState"]
