@@ -23,7 +23,6 @@ import time
 from django.utils import timezone
 from datetime import datetime
 from SCPS import settings
-import redis
 
 User = get_user_model()
 
