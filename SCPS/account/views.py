@@ -489,26 +489,28 @@ class MqttRunCommand(APIView):
 
 
 class graphNodes(APIView):
-    permission_classes = [AllowAny]
-    nodes = []
-    links = []
-    for t in Node.objects.all():
-        p = {
-            'id': str(t.MacAddress)
-        }
-        nodes.append(p)
-        for n in Neighbor.objects.all():
-            o = {
-                'source': str(n.Node1.MacAddress),
-                'target': str(n.Node2.MacAddress)
+    def get(self, request):
+        permission_classes = [AllowAny]
+        nodes = []
+        links = []
+        for t in Node.objects.all():
+            p = {
+                'id': str(t.MacAddress)
             }
-            links.append(o)
-    data = {'graph': nodes, 'links': links}
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        'chat_test',  # group _ name
-        {
-            'type': 'graph',
-            'message': json.dumps(data)
-        }
-    )
+            nodes.append(p)
+            for n in Neighbor.objects.all():
+                o = {
+                    'source': str(n.Node1.MacAddress),
+                    'target': str(n.Node2.MacAddress)
+                }
+                links.append(o)
+        data = {'graph': nodes, 'links': links}
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'chat_test',  # group _ name
+            {
+                'type': 'graph',
+                'message': json.dumps(data)
+            }
+        )
+        return Response(status=status.HTTP_200_OK)

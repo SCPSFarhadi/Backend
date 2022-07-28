@@ -9,6 +9,6 @@ urlpatterns = [
     path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('mqttrun/',MqttRunCommand.as_view()),
     path('sendlastdata/',sendLastData.as_view()),
-    path('setnodeconfig/',SetConfigNode.as_view())
+    path('setnodeconfig/',SetConfigNode.as_view()),
     path('graph/',graphNodes.as_view())
 ]
