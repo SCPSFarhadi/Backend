@@ -184,16 +184,16 @@ def roomTem(z):
 def minandmax(z):
     sum = 0
     counter = 0
-    min = z["data"]["homeT"]
-    max = z["data"]["homeT"]
+    min = 10000000
+    max = 0
     for t in z["data"]:
         sum = sum + float(t["homeT"])
         counter = counter + 1
-        if t["homeT"] > max:
-            max = t["homeT"]
+        if float(t["homeT"]) > max:
+            max =float(t["homeT"])
             maxid = "156"
-        if t["homeT"] < min:
-            min = t["homeT"]
+        if float(t["homeT"]) < min:
+            min = float(t["homeT"])
             minid = "193"
     Avg = sum / counter
     data = {'id': maxid, 'temp': max}
