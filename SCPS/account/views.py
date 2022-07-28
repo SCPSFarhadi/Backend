@@ -279,7 +279,10 @@ def ReciveMqtt2(z):
     for t in z["data"]:
         nodes = NodeStation()
         nodeid = t["id"]
-        node = Node.objects.get(MacAddress=nodeid)
+        try:
+            node = Node.objects.get(MacAddress=nodeid)
+        except :
+            print(t["id"])
         nodes.Node = node
         s = 0
         l = 0
