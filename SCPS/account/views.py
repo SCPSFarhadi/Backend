@@ -257,15 +257,15 @@ def ReciveMqtt1(z):
             h.Node2 = node2
             h.RSSI = rssi
             h.save()
-            o = t["nums"]
-            u = 0
-            if Node.objects.filter(MacAddress=nodeid1).count() > o:
-                o = Node.objects.filter(MacAddress=nodeid1).count() - o
-            while u < o:
-                l = FanCoil()
-                l.Node = Node.objects.get(MacAddress=nodeid1)
-                u = u + 1
-                l.save()
+            #o = t["nums"]
+            #u = 0
+            #if Node.objects.filter(MacAddress=nodeid1).count() > o:
+            #    o = Node.objects.filter(MacAddress=nodeid1).count() - o
+            #while u < o:
+            #    l = FanCoil()
+            #    l.Node = Node.objects.get(MacAddress=nodeid1)
+            #    u = u + 1
+            #    l.save()
 
     Graphws(z)
 
