@@ -231,7 +231,7 @@ def nodeNewTem(z):
         async_to_sync(channel_layer.group_send)(
             'chat_test',  # group _ name
             {
-                'type': 'nodeNewTem',
+                'type': 'nodeColor',
                 'message': json.dumps(data)
             }
         )
@@ -333,7 +333,7 @@ def on_message(client, userdata, message):
 def MqttRun():
     client.on_connect = on_connect
     client.on_message = on_message
-    client.connect('84.241.60.84', 1883)
+    client.connect('mqtt.giot.ir', 1883)
     client.subscribe("scps/client")
     client.loop_forever()
 
@@ -516,7 +516,7 @@ class SetConfigNode(APIView):
         }
         json_object = json.dumps(dictsend)
         print(json_object)
-        client.connect('84.241.60.84', 1883)
+        client.connect('mqtt.giot.ir', 1883)
         client.publish('scps/server', json_object)
         return Response(status=status.HTTP_200_OK)
 
