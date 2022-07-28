@@ -488,8 +488,8 @@ class MqttRunCommand(APIView):
 
 
 class graphNodes(APIView):
+    permission_classes=[AllowAny]
     def get(self, request):
-        permission_classes = [AllowAny]
         nodes = []
         links = []
         for t in Node.objects.all():
