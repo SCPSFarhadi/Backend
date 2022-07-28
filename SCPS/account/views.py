@@ -133,8 +133,8 @@ def pychart(z):
     p = 0
     for i in z["data"]:
         l = l + 1
-    for i in z["errors"]:
-        w = w + 1
+    #for i in z["errors"]:
+    #    w = w + 1
     for i in Node.objects.all():
         p = p + 1
     active = ((l - w) / p) * 100
@@ -161,8 +161,8 @@ def pychart(z):
 def roomTem(z):
     sum = 0
     counter = 0
-    min = z["data"]["homeT"]
-    max = z["data"]["homeT"]
+    min = 196
+    max = 0
     for t in z["data"]:
         sum = sum + float(t["homeT"])
         counter = counter + 1
