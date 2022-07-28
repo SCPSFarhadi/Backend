@@ -181,11 +181,53 @@ def roomTem(z):
         }
     )
 
+def minandmax(z):
+    sum = 0
+    counter = 0
+    min = z["data"]["homeT"]
+    max = z["data"]["homeT"]
+    for t in z["data"]:
+        sum = sum + float(t["homeT"])
+        counter = counter + 1
+        if t["homeT"] > max:
+            max = t["homeT"]
+            maxid = "156"
+        if t["homeT"] < min:
+            min = t["homeT"]
+            minid = "193"
+    Avg = sum / counter
+    data = {'id': maxid, 'temp': max}
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        'chat_test',  # group _ name
+        {
+            'type': 'maxTemp',
+            'message': json.dumps(data)
+        }
+    )
+    data = {'id': minid, 'temp': min}
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        'chat_test',  # group _ name
+        {
+            'type': 'minTemp',
+            'message': json.dumps(data)
+        }
+    )
+
 
 def nodeNewTem(z):
     for t in z["data"]:
         data = {'nodeid': str(t["id"]), 'time': str(timezone.now()), 'temp': t["homeT"]}
         channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'chat_test',  # group _ name
+            {
+                'type': 'nodeNewTem',
+                'message': json.dumps(data)
+            }
+        )
+        data = {str(t["id"]), "#332525"}
         async_to_sync(channel_layer.group_send)(
             'chat_test',  # group _ name
             {
@@ -267,6 +309,7 @@ def ReciveMqtt2(z):
     #   Securitys.Name=t["name"]
     #  Securitys.Value=t["value"]
     # Securitys.save()
+    minandmax(z)
     pychart(z)
     roomTem(z)
     nodeNewTem(z)
