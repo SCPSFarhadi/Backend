@@ -159,11 +159,17 @@ def pychart(z):
 def roomTem(z):
     sum=0
     counter=0
+    min=z["data"]["homeT"]
+    max=z["data"]["homeT"]
     for t in z["data"]:
         sum=sum + float(t["homeT"])
         counter=counter+1
+        if t["homeT"]>max:
+            max=t["homeT"]
+        if t["homeT"]<min:
+            min=t["homeT"]
     Avg=sum/counter
-    data={'date':str(timezone.now()),'tem':Avg}
+    data={'date':str(timezone.now()),'tem':Avg , 'min':min, 'max':max }
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         'chat_test',  # group _ name
@@ -472,4 +478,28 @@ class MqttRunCommand(APIView):
         x.start()
         return Response(status=status.HTTP_200_OK)
 
-    
+
+class graphNodes(APIView):
+    permission_classes = [AllowAny]
+    nodes=[]
+    links=[]
+    for t in Node.objects.all():
+        p={
+            'id': str(t.MacAddress)
+        }
+        nodes.append(p)
+        for n in Neighbor.objects.all():
+            o={
+                'source': str(n.Node1.MacAddress),
+                'target': str(n.Node2.MacAddress)
+            }
+            links.append(o)
+    data={'graph': nodes,'links':links}
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        'chat_test',  # group _ name
+        {
+            'type': 'graph',
+            'message': json.dumps(data)
+        }
+    )
