@@ -171,7 +171,7 @@ def roomTem(z):
         if t["homeT"] < min:
             min = t["homeT"]
     Avg = sum / counter
-    data = {'date': str(timezone.now()), 'tem': Avg, 'min': min, 'max': max}
+    data = {'date': str(timezone.now()), 'tem': Avg}
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         'chat_test',  # group _ name
