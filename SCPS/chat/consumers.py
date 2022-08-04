@@ -133,10 +133,21 @@ class ChatConsumer(WebsocketConsumer):
         }))
 
     def nodeColor(self, event):
-        print("in notifications")
         self.send(text_data=json.dumps({
             'type': event['type'],
-            'message': event['value']
+            'message': event['message']
+        }))
+
+    def maxTemp(self, event):
+        print("in MaxTemp")
+        self.send(text_data=json.dumps({
+            'type': event['type'],
+            'message': event['message']
+        }))
+    def minTemp(self, event):
+        self.send(text_data=json.dumps({
+            'type': event['type'],
+            'message': event['message']
         }))
     def send_notification(self, event):
         print("in notifications")

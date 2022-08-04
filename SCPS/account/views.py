@@ -22,7 +22,7 @@ import threading
 import time
 from django.utils import timezone
 from datetime import datetime
-from SCPS import settings
+# from SCPS import settings
 
 User = get_user_model()
 
@@ -227,12 +227,12 @@ def nodeNewTem(z):
                 'message': json.dumps(data)
             }
         )
-        data = {str(t["id"]), "#332525"}
+        data = [str(t["id"]), "#332525"]
         async_to_sync(channel_layer.group_send)(
             'chat_test',  # group _ name
             {
                 'type': 'nodeColor',
-                'message': json.dumps(data)
+                'message': data
             }
         )
 
@@ -302,10 +302,10 @@ def ReciveMqtt2(z):
         nodes.SetPointTemperature = t["setT"]
         nodes.DateTime = mynow
         nodes.save()
-    for t in z["errors"]:
-        node2 = Node.objects.get(MacAddress=t["id"])
-        node2.ErrorId = t["code"]
-        node2.save()
+    # for t in z["errors"]:
+    #     node2 = Node.objects.get(MacAddress=t["id"])
+    #     node2.ErrorId = t["code"]
+    #     node2.save()
     # errorws(z)
     # for t in z["security"]:
     #    Securitys=SecurityStation()
