@@ -402,13 +402,13 @@ class LogoutAPIView(generics.GenericAPIView):
 
 class sendLastData(APIView):
     permission_classes = [AllowAny]
-
     def get(self, request):
         l = NodeStation.objects.all().order_by("DateTime")
         sum = 0
         d = datetime.now()
         counter = 1
         en = 0
+        p=[]
         for i in l:
             if d == i.DateTime:
                 sum = sum + i.HomeTemperature
@@ -423,18 +423,20 @@ class sendLastData(APIView):
                     en = 1
                     continue
                 Avg = sum / counter
-                data = {'date': str(d), 'tem': Avg}
+                l={'date': str(d), 'tem': Avg}
+                p.append(l)
                 channel_layer = get_channel_layer()
-                async_to_sync(channel_layer.group_send)(
-                    'chat_test',  # group _ name
-                    {
-                        'type': 'roomTem',
-                        'message': json.dumps(data)
-                    }
-                )
                 d = i.DateTime
                 counter = 1
                 sum = i.HomeTemperature
+        data=p 
+        async_to_sync(channel_layer.group_send)(
+            'chat_test',  # group _ name
+            {
+                'type': 'roomTem',
+                'message': json.dumps(data)
+            }
+        )
         return Response(status=status.HTTP_200_OK)
 
     def post(self, request):
@@ -459,7 +461,7 @@ class SetConfigNode(APIView):
         a = 0
         b = 0
         c = -1
-        valve_cammand = []
+        #valve_cammand = []
         dictsend = {}
         MyNode = Node.objects.get(MacAddress=request.data["nodeid"])
         MyNode.SetPointTemperature = request.data["temp"]
@@ -486,20 +488,42 @@ class SetConfigNode(APIView):
         if request.data["manualMode"] == True:
             MyNode.mode = "manualMode"
             c = 2
-        NodeArray = Node.objects.all()
-        print(str(NodeArray))
-        for i in NodeArray:
-            if i.MacAddress == request.data["nodeid"]:
-                NodeStationArray = FanCoil.objects.filter(Node=i)
-                o = 1
-                for z in NodeStationArray:
-                    if o > 3:
-                        o = 3
-                    valve_cammand.append(request.data["valve" + str(o)])
-                    z.valv = request.data["valve" + str(o)]
-                    o = o + 1
-                    z.save()
-        MyNode.save()
+        
+    #    NodeArray = Node.objects.all()
+    #    print(str(NodeArray))
+    #    for i in NodeArray:
+    #        if i.MacAddress == request.data["nodeid"]:
+    #            NodeStationArray = FanCoil.objects.filter(Node=i)
+    #            o = 1
+    #            for z in NodeStationArray:
+    #                if o > 3:
+    #                    o = 3
+    #                valve_cammand.append(request.data["cValve" + str(o)])
+    #                z.valv = request.data["cValve" + str(o)]
+    #                o = o + 1
+    #                z.save()
+    #    MyNode.save()
+        valve_cammand=[]
+        fan_command=[]
+        if request.data["cValue1"]==True:
+            valve_cammand.append(1)
+        else:
+            valve_cammand.append(0)
+    
+        if request.data["cValue2"]==True:
+            valve_cammand.append(1)
+        else:
+            valve_cammand.append(0)
+        if request.data["fanAir1"]==True:
+            fan_command.append(1)
+        else:
+            fan_command.append(0)
+    
+        if request.data["fanAir2"]==True :
+            fan_command.append(1)
+        else:
+            fan_command.append(0)
+    
         client = mqtt.Client()
         dictsend = {
             "type": "33",
@@ -507,12 +531,12 @@ class SetConfigNode(APIView):
             "conf": [
                 {
                     "id": str(MyNode.MacAddress),
-                    "setT": MyNode.SetPointTemperature,
+                    "setT": [MyNode.SetPointTemperature,255,255,255],
                     "valve_command": valve_cammand,
                     "workmode": c,
                     "permission": b,
                     "hvac": 1,
-                    "fan_command": a
+                    "fan_command": fan_command,
                 }
             ],
             "equ": {}
