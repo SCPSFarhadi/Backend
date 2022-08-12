@@ -587,3 +587,11 @@ class graphNodes(APIView):
             }
         )
         return Response(status=status.HTTP_200_OK)
+
+class weather(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        a=request.data["longitude"]
+        b=request.data["latitude"]
+        return Response(status=status.HTTP_200_OK)
