@@ -535,7 +535,7 @@ class SetConfigNode(APIView):
             "conf": [
                 {
                     "id": str(MyNode.MacAddress),
-                    "setT": [MyNode.SetPointTemperature,255,255,255],
+                    "setT": [MyNode.SetPointTemperature,32.68,43.22,255],
                     "valve_command": valve_cammand,
                     "workmode": c,
                     "permission": b,
