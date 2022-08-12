@@ -228,7 +228,7 @@ def nodeNewTem(z):
     "fanAir2":"on",
     "hvac1":"on",
     "hvac2":"off",
-    "parameter":"2",}
+    "parameter":"2"}
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
             'chat_test',  # group _ name
