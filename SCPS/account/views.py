@@ -196,22 +196,22 @@ def minandmax(z):
             min = float(t["homeT"])
             minid = "193"
     Avg = sum / counter
-    data = {'id': maxid, 'temp': max}
+    data = {'id': maxid, 'temp': str(max)}
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         'chat_test',  # group _ name
         {
             'type': 'maxTemp',
-            'message': json.dumps(data)
+            'message': data
         }
     )
-    data = {'id': minid, 'temp': min}
+    data = {'id': minid, 'temp': str(min)}
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         'chat_test',  # group _ name
         {
             'type': 'minTemp',
-            'message': json.dumps(data)
+            'message': data
         }
     )
 
