@@ -218,7 +218,17 @@ def minandmax(z):
 
 def nodeNewTem(z):
     for t in z["data"]:
-        data = {'nodeid': str(t["id"]), 'time': str(timezone.now()), 'temp': t["homeT"]}
+        data = {'nodeid': str(t["id"]), 'time': str(timezone.now()), 'temp': t["homeT"],       
+    "lastOccupancy":"156",
+    "lightSensor":"14",
+    "humiditySensor":"12",
+    "analogSensor1":"34",
+    "analogSensor2":"35",
+    "fanAir1":"of",
+    "fanAir2":"on",
+    "hvac1":"on",
+    "hvac2":"off",
+    "parameter":"2",}
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
             'chat_test',  # group _ name
@@ -295,7 +305,7 @@ def ReciveMqtt2(z):
         #f = s / l
         #for u in t["valveState"]:
         #    x[l].valvstate = u
-        nodes.FanCoilTemperature = 154#f
+        nodes.FanCoilTemperature = 154
         nodes.HomeTemperature = t["homeT"]
         nodes.Presence = t["present"]
         # nodes.faucetState=t["faucetState"]
@@ -499,12 +509,12 @@ class SetConfigNode(APIView):
     #    MyNode.save()
         valve_cammand=[]
         fan_command=[]
-        if request.data["cValue1"]==True:
+        if request.data["cValve1"]==True:
             valve_cammand.append(1)
         else:
             valve_cammand.append(0)
     
-        if request.data["cValue2"]==True:
+        if request.data["cValve2"]==True:
             valve_cammand.append(1)
         else:
             valve_cammand.append(0)
