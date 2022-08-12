@@ -465,12 +465,6 @@ class SetConfigNode(APIView):
         dictsend = {}
         MyNode = Node.objects.get(MacAddress=request.data["nodeid"])
         MyNode.SetPointTemperature = request.data["temp"]
-        if request.data["fanopen"] == True:
-            MyNode.status = True
-            a = 1
-        elif request.data["fanopen"] == False:
-            MyNode.status = False
-            a = 0
         if request.data["perm"] == "YES":
             MyNode.ControlStatus = True
             b = 1
