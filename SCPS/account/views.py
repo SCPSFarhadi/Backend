@@ -218,7 +218,7 @@ def minandmax(z):
 
 def nodeNewTem(z):
     for t in z["data"]:
-        data = {'nodeid': str(t["id"]), 'time': str(timezone.now()), 'temp': t["homeT"],       
+        data = {'nodeId': str(t["id"]), 'time': str(timezone.now()), 'temp': t["homeT"],       
     "lastOccupancy":"156",
     "lightSensor":"14",
     "humiditySensor":"12",
