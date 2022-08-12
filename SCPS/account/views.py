@@ -234,7 +234,7 @@ def nodeNewTem(z):
             'chat_test',  # group _ name
             {
                 'type': 'nodeNewTem',
-                'message': json.dumps(data)
+                'message': data
             }
         )
         data = [str(t["id"]), "#332525"]
