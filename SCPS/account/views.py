@@ -598,6 +598,32 @@ class graphNodes(APIView):
         )
         return Response(status=status.HTTP_200_OK)
 
+class controlPanel(models.Model):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        hvacmode=request.data['hvacmode']
+        selectmode=request.data['selectmode']
+        fan=request.data['fan']
+        setpoint=request.data['setpoint']
+        dictsend = {
+    "type": "34",
+    "time": "155631654",
+    "conf": {
+
+             "out_temp":36.58,
+             "engine_temp":25,
+             "other_temp":25,
+        }
+    
+}
+        json_object = json.dumps(dictsend)
+        print(json_object)
+        client.connect('mqtt.giot.ir', 1883)
+        client.publish('scps/server', json_object)
+        return Response(status=status.HTTP_200_OK)
+    
+
 class Floor(APIView):
     permission_classes = [AllowAny]
     def post(self,request,format=None):

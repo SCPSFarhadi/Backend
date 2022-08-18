@@ -130,7 +130,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 class Node(models.Model):
     ErrorId=models.IntegerField(null=True, blank=True)
     MacAddress=models.CharField(max_length=100,null=True,blank=True)
-    SetPointTemperatureNode=models.FloatField(null=True,blank=True)
+    SetPointTemperature=models.FloatField(null=True,blank=True)
     permissions=models.BooleanField(null=True, blank=True)
     status=models.BooleanField(null=True, blank=True)
     mode=models.CharField(max_length=500,null=True, blank=True)

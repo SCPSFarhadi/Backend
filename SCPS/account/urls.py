@@ -1,6 +1,6 @@
 from django.urls import path ,include
 from rest_framework_simplejwt import views as jwt_views
-from .views import CustomTokenObtainPairView, CustomUserCreate, LogoutAPIView, MqttRunCommand, sendLastData, SetConfigNode, graphNodes,weather,Floor
+from .views import CustomTokenObtainPairView, CustomUserCreate, LogoutAPIView, MqttRunCommand, sendLastData, SetConfigNode, graphNodes,weather,Floor,controlPanel
 
 urlpatterns = [
     path('create/', CustomUserCreate.as_view(), name="create_user"),
@@ -13,4 +13,5 @@ urlpatterns = [
     path('graph/',graphNodes.as_view()),
     path('weather/',weather.as_view()),
     path('Floor/',Floor.as_view()),
+    path('controlPanel/',controlPanel.as_view()),
 ]
