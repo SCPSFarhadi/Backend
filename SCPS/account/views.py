@@ -598,7 +598,7 @@ class graphNodes(APIView):
         )
         return Response(status=status.HTTP_200_OK)
 
-class controlPanel(models.Model):
+class controlPanel(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
