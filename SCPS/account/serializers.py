@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from .models import CustomUser
+from django.utils import timezone
+from datetime import datetime
+from .models import CustomUser,Floor
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -46,3 +47,8 @@ class LogoutSerializer(serializers.Serializer):
 
         except TokenError:
             self.fail('bad_token')
+class Floorserializer(serializers.ModelSerializer):
+    class Meta: 
+        model = Floor
+        fields = ['image']
+    

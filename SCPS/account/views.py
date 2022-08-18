@@ -6,6 +6,7 @@ from rest_framework.decorators import permission_classes, api_view
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser,FormParser
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -16,12 +17,21 @@ from django.db import models
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import paho.mqtt.client as mqtt
-from .serializers import CustomUserSerializer, LogoutSerializer
+from .serializers import CustomUserSerializer, LogoutSerializer,Floorserializer
 import logging
 import threading
 import time
 from django.utils import timezone
 from datetime import datetime
+import requests
+from tokenize import Name
+from unicodedata import category
+from django.db import models
+from django.conf import settings
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from datetime import datetime
+import os
 # from SCPS import settings
 
 User = get_user_model()
@@ -473,24 +483,24 @@ class SetConfigNode(APIView):
         c = -1
         #valve_cammand = []
         dictsend = {}
-        MyNode = Node.objects.get(MacAddress=request.data["nodeid"])
-        MyNode.SetPointTemperature = request.data["temp"]
+        #MyNode = Node.objects.get(MacAddress=request.data["nodeid"])
+        #MyNode.SetPointTemperature = request.data["temp"]
         if request.data["perm"] == "YES":
-            MyNode.ControlStatus = True
+            #MyNode.ControlStatus = True
             b = 1
         elif request.data["perm"] == "NO":
-            MyNode.ControlStatus = False
+            #MyNode.ControlStatus = False
             b = 0
         if request.data["sleepMode"] == True:
-            MyNode.mode = "sleepMode"
-            MyNode.status = False
+            #MyNode.mode = "sleepMode"
+            #MyNode.status = False
             c = 0
             a = 0
         if request.data["optimalMode"] == True:
-            MyNode.mode = "optimalMode"
+            #MyNode.mode = "optimalMode"
             c = 1
         if request.data["manualMode"] == True:
-            MyNode.mode = "manualMode"
+            #MyNode.mode = "manualMode"
             c = 2
         
     #    NodeArray = Node.objects.all()
@@ -534,8 +544,8 @@ class SetConfigNode(APIView):
             "time": "568595",
             "conf": [
                 {
-                    "id": str(MyNode.MacAddress),
-                    "setT": [MyNode.SetPointTemperature,request.data["dongleValue1"],request.data["dongleValue2"],255],
+                    "id": request.data["nodeid"],
+                    "setT": [request.data["temp"],request.data["dongleValue1"],request.data["dongleValue2"],255],
                     "valve_command": valve_cammand,
                     "workmode": c,
                     "permission": b,
@@ -588,10 +598,38 @@ class graphNodes(APIView):
         )
         return Response(status=status.HTTP_200_OK)
 
+class Floor(APIView):
+    permission_classes = [AllowAny]
+    def post(self,request,format=None):
+        parser_classes=[MultiPartParser, FormParser]
+        serializer=Floorserializer(data=request.data)
+        print()
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
+
 class weather(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
         a=request.data["longitude"]
         b=request.data["latitude"]
+        x = requests.get('https://one-api.ir/weather/?token={62cdc2455c46c6.60515960}&action=currentbylocation&lat={' + b + '}&lon={' + a + '}')
+        print(x.text)
+        dictsend = {
+    "type": "34",
+    "time": "155631654",
+    "conf": {
+
+             "out_temp":36.58,
+             "engine_temp":25,
+             "other_temp":25,
+        }
+    
+}
+        json_object = json.dumps(dictsend)
+        print(json_object)
+        client.connect('mqtt.giot.ir', 1883)
+        client.publish('scps/server', json_object)
         return Response(status=status.HTTP_200_OK)

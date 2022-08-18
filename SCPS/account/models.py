@@ -7,7 +7,13 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+import os
 
+def upload_to(instance, filename):
+    now = timezone.now()
+    base, extension = os.path.splitext(filename.lower())
+    milliseconds = now.microsecond // 1000
+    return f"users/{instance.pk}/{now:%Y%m%d%H%M%S}{milliseconds}{extension}"
 
 # Create your models here.
 class CustomUserManager(BaseUserManager):
@@ -124,7 +130,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 class Node(models.Model):
     ErrorId=models.IntegerField(null=True, blank=True)
     MacAddress=models.CharField(max_length=100,null=True,blank=True)
-    SetPointTemperature=models.FloatField(null=True,blank=True)
+    SetPointTemperatureNode=models.FloatField(null=True,blank=True)
     permissions=models.BooleanField(null=True, blank=True)
     status=models.BooleanField(null=True, blank=True)
     mode=models.CharField(max_length=500,null=True, blank=True)
@@ -175,5 +181,6 @@ class FanCoilStation(models.Model):
     valvstate=models.BooleanField(null=True, blank=True)
     Temperature=models.FloatField(null=True, blank=True)
    
-    
+class Floor(models.Model):
+    image=models.ImageField(_("Image"),upload_to=upload_to, null=True, blank=True)
     
