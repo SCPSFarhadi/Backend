@@ -635,7 +635,7 @@ class Floor(APIView):
         return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
     def get(self,request,format=None):
         f=Floor.objects.all()
-        serializer=Floorserializer(data=f)
+        serializer=Floorserializer(data=f,many=True)
         return Response(serializer.data,status.HTTP_200_OK)
 
 class weather(APIView):
