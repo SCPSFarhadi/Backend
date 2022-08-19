@@ -659,3 +659,20 @@ class weather(APIView):
         client.connect('mqtt.giot.ir', 1883)
         client.publish('scps/server', json_object)
         return Response(status=status.HTTP_200_OK)
+    
+class ReportNodeStation(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        ffrom=request.data['from']
+        to=request.data['to']
+        return Response(data=[],status=status.HTTP_200_OK)
+    
+class ReportSecurityStation(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        ffrom=request.data['from']
+        to=request.data['to']
+        return Response(data=[],status=status.HTTP_200_OK)
+    
