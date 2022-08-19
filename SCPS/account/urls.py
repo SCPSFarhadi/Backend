@@ -2,6 +2,7 @@ from django.urls import path ,include
 from rest_framework_simplejwt import views as jwt_views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.urls import path, re_path, include
 from .views import CustomTokenObtainPairView, CustomUserCreate, LogoutAPIView, MqttRunCommand, sendLastData, SetConfigNode, graphNodes,weather,Floor,controlPanel,ReportNodeStation,ReportSecurityStation
 
 urlpatterns = [
@@ -20,5 +21,4 @@ urlpatterns = [
     path('ReportSecurityStation/',ReportSecurityStation.as_view()),
 ]
 
-urlpatterns+= static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
     
