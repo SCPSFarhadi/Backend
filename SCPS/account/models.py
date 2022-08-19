@@ -184,3 +184,5 @@ class FanCoilStation(models.Model):
 class Floor(models.Model):
     image=models.ImageField(_("Image"),upload_to=upload_to, null=True, blank=True)
     
+class MatFile(models.Model):
+    File=models.FileField(_("File"),upload_to=upload_to, null=True, blank=True)

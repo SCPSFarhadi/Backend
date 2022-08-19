@@ -3,7 +3,7 @@ from rest_framework_simplejwt import views as jwt_views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, re_path, include
-from .views import CustomTokenObtainPairView, CustomUserCreate, LogoutAPIView, MqttRunCommand, sendLastData, SetConfigNode, graphNodes,weather,Floor,controlPanel,ReportNodeStation,ReportSecurityStation
+from .views import CustomTokenObtainPairView, CustomUserCreate, LogoutAPIView, MqttRunCommand, sendLastData, SetConfigNode, graphNodes,weather,Floor,controlPanel,ReportNodeStation,ReportSecurityStation,MatFiled
 
 urlpatterns = [
     path('create/', CustomUserCreate.as_view(), name="create_user"),
@@ -19,6 +19,7 @@ urlpatterns = [
     path('controlPanel/',controlPanel.as_view()),
     path('ReportNodeStation/',ReportNodeStation.as_view()),
     path('ReportSecurityStation/',ReportSecurityStation.as_view()),
+    path('MatFile/',MatFiled.as_view())
 ]
 
     

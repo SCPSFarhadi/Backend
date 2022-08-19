@@ -10,14 +10,14 @@ from rest_framework.parsers import MultiPartParser,FormParser
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import CustomUser, Node, NodeStation, Neighbor, Allocation, UserNode, Security, SecurityStation, FanCoil,Floor
+from .models import CustomUser, Node, NodeStation, Neighbor, Allocation, UserNode, Security, SecurityStation, FanCoil,Floor,MatFile
 import json
 from django.contrib.auth import get_user_model
 from django.db import models
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import paho.mqtt.client as mqtt
-from .serializers import CustomUserSerializer, LogoutSerializer,Floorserializer
+from .serializers import CustomUserSerializer, LogoutSerializer,Floorserializer,MatFileserializer
 import logging
 import threading
 import time
@@ -680,4 +680,52 @@ class ReportSecurityStation(APIView):
         ffrom=request.data['from']
         to=request.data['to']
         return Response(data=[],status=status.HTTP_200_OK)
-    
+
+class MatFiled(APIView):
+    permission_classes = [AllowAny]
+    def post(self,request,format=None):
+        parser_classes=[MultiPartParser, FormParser]
+        serializer=MatFileserializer(data=request.data)
+        if serializer.is_valid():
+            print("1111111111111111111111111111111111111111111111111111111")
+            serializer.save()
+            print("22222222222222222222222222222222")
+            f=MatFile.objects.all()
+            a="http://91.98.15.243:8000/"+str(f[0].File)
+            print(a)
+            dictsend = {
+    "type": "11",
+    "time": "server timestamp",
+    "clusters": [
+        {
+            "CHId": "<device mac address>",
+            "channel": "5"
+        }
+    ],
+    "equ": {"url":a},
+    "conf": [
+        {
+            "id": "<device mac address>",
+            "setT": [25,255,255,255], 
+            "permission": 0, 
+            "workmode" : 1, 
+            "hvac":0, 
+            "fan_command": [],
+            "Valve_command":[], 
+            "out_temp":40,
+            "engine_temp":35,
+             "other_temp":27,
+
+        }
+    ]
+}
+            json_object = json.dumps(dictsend)
+            print(json_object)
+            client.connect('mqtt.giot.ir', 1883)
+            client.publish('scps/server', json_object)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
+    def get(self,request,format=None):
+        f=MatFile.objects.all()
+        serializer=MatFileserializer(data=f,many=True)
+        return Response(serializer.data,status.HTTP_200_OK)
