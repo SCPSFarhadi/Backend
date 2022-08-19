@@ -679,36 +679,35 @@ class ReportSecurityStation(APIView):
         to=request.data['to']
         return Response(data=[],status=status.HTTP_200_OK)
 
-class MatFile(APIView):
+class MatFiled(APIView):
     permission_classes = [AllowAny]
     def post(self,request,format=None):
         parser_classes=[MultiPartParser, FormParser]
         serializer=MatFileserializer(data=request.data)
         if serializer.is_valid():
+            print("1111111111111111111111111111111111111111111111111111111")
             serializer.save()
+            print("22222222222222222222222222222222")
             f=MatFile.objects.all()
-            serializer=MatFileserializer(data=f,many=True)
-            a="http://91.98.15.243:8000/"+f[0]
+            a="http://91.98.15.243:8000/"+str(f[0].File)
+            print(a)
             dictsend = {
     "type": "11",
     "time": "server timestamp",
     "clusters": [
         {
             "CHId": "<device mac address>",
-            "channel": "5",
-            "nodeIds": [
-                "<device mac address>"
-            ]
+            "channel": "5"
         }
     ],
-    "equ": {a},
+    "equ": {"url":a},
     "conf": [
         {
             "id": "<device mac address>",
             "setT": [25,255,255,255], 
-            "permission": 0/1, 
+            "permission": 0, 
             "workmode" : 1, 
-            "hvac":0/1, 
+            "hvac":0, 
             "fan_command": [],
             "Valve_command":[], 
             "out_temp":40,
