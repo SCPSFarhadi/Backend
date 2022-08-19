@@ -10,14 +10,14 @@ from rest_framework.parsers import MultiPartParser,FormParser
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import CustomUser, Node, NodeStation, Neighbor, Allocation, UserNode, Security, SecurityStation, FanCoil,Floor
+from .models import CustomUser, Node, NodeStation, Neighbor, Allocation, UserNode, Security, SecurityStation, FanCoil,Floor,MatFile
 import json
 from django.contrib.auth import get_user_model
 from django.db import models
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import paho.mqtt.client as mqtt
-from .serializers import CustomUserSerializer, LogoutSerializer,Floorserializer
+from .serializers import CustomUserSerializer, LogoutSerializer,Floorserializer,MatFileserializer
 import logging
 import threading
 import time
@@ -678,4 +678,17 @@ class ReportSecurityStation(APIView):
         ffrom=request.data['from']
         to=request.data['to']
         return Response(data=[],status=status.HTTP_200_OK)
-    
+
+class MatFile(APIView):
+    permission_classes = [AllowAny]
+    def post(self,request,format=None):
+        parser_classes=[MultiPartParser, FormParser]
+        serializer=MatFileserializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
+    def get(self,request,format=None):
+        f=MatFile.objects.all()
+        serializer=MatFileserializer(data=f,many=True)
+        return Response(serializer.data,status.HTTP_200_OK)

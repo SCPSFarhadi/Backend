@@ -3,7 +3,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils import timezone
 from datetime import datetime
-from .models import CustomUser,Floor
+from .models import CustomUser,Floor,MatFile
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -51,4 +51,8 @@ class Floorserializer(serializers.ModelSerializer):
     class Meta: 
         model = Floor
         fields = ['image']
+class MatFileserializer(serializers.ModelSerializer):
+    class Meta: 
+        model=MatFile
+        fields=['File']
     
