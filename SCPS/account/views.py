@@ -10,7 +10,7 @@ from rest_framework.parsers import MultiPartParser,FormParser
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import CustomUser, Node, NodeStation, Neighbor, Allocation, UserNode, Security, SecurityStation, FanCoil
+from .models import CustomUser, Node, NodeStation, Neighbor, Allocation, UserNode, Security, SecurityStation, FanCoil,Floor
 import json
 from django.contrib.auth import get_user_model
 from django.db import models
