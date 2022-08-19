@@ -686,6 +686,42 @@ class MatFile(APIView):
         serializer=MatFileserializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            f=MatFile.objects.all()
+            serializer=MatFileserializer(data=f,many=True)
+            a="http://91.98.15.243:8000/"+f[0]
+            dictsend = {
+    "type": "11",
+    "time": "server timestamp",
+    "clusters": [
+        {
+            "CHId": "<device mac address>",
+            "channel": "5",
+            "nodeIds": [
+                "<device mac address>"
+            ]
+        }
+    ],
+    "equ": {a},
+    "conf": [
+        {
+            "id": "<device mac address>",
+            "setT": [25,255,255,255], 
+            "permission": 0/1, 
+            "workmode" : 1, 
+            "hvac":0/1, 
+            "fan_command": [],
+            "Valve_command":[], 
+            "out_temp":40,
+            "engine_temp":35,
+             "other_temp":27,
+
+        }
+    ]
+}
+            json_object = json.dumps(dictsend)
+            print(json_object)
+            client.connect('mqtt.giot.ir', 1883)
+            client.publish('scps/server', json_object)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
     def get(self,request,format=None):
