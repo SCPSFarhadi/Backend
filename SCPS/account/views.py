@@ -629,11 +629,14 @@ class Floor(APIView):
     def post(self,request,format=None):
         parser_classes=[MultiPartParser, FormParser]
         serializer=Floorserializer(data=request.data)
-        print()
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
+    def get(self,request,format=None):
+        f=Floor.objects.all()
+        serializer=Floorserializer(data=f)
+        return Response(serializer.data,status.HTTP_200_OK)
 
 class weather(APIView):
     permission_classes = [AllowAny]
