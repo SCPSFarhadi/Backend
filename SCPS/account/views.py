@@ -302,7 +302,9 @@ def ReciveMqtt2(z):
         try:
             node = Node.objects.get(MacAddress=nodeid)
         except :
-            print(t["id"])
+            node=Node()
+            node.MacAddress=t["id"]
+            node.save()
         nodes.Node = node
         s = 0
         l = 0
