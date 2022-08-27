@@ -667,8 +667,15 @@ class ReportNodeStation(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        ffrom=request.data['from']
-        to=request.data['to']
+        ffrom=request.data['from'].split("-")
+        datef=datetime(int(ffrom[0]),int(ffrom[1]),int(ffrom[2]))
+        to=request.data['to'].split("-")
+        datet=datetime(int(to[0]),int(to[1]),int(to[2]))
+        node=request.data['nodeid']
+        MyNode=Node.objects.get(MacAddress=node)
+        l=NodeStation.objects.filter(Node==MyNode)
+            
+        
         return Response(data=[],status=status.HTTP_200_OK)
     
 class ReportSecurityStation(APIView):
