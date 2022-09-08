@@ -81,6 +81,8 @@ WSGI_APPLICATION = 'SCPS.wsgi.application'
 # Channels
 ASGI_APPLICATION = 'SCPS.asgi.application'
 CHANNEL_LAYERS = {
+    
+    
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {

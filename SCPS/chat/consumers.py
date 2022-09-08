@@ -73,13 +73,6 @@ class ChatConsumer(WebsocketConsumer):
             'message': message
         }))
 
-    def nodeColor(self, event):
-        message = event['message']
-        # Send message to WebSocket
-        self.send(text_data=json.dumps({
-            'type': event['type'],
-            'message': message
-        }))
 
     def graph(self, event):
         message = event['message']

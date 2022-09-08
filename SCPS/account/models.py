@@ -134,6 +134,7 @@ class Node(models.Model):
     permissions=models.BooleanField(null=True, blank=True)
     status=models.BooleanField(null=True, blank=True)
     mode=models.CharField(max_length=500,null=True, blank=True)
+    name=models.CharField(max_length=500,null=True, blank=True)
 class NodeStation(models.Model):
     DateTime=models.DateTimeField()
     Node=models.ForeignKey(Node,on_delete=models.CASCADE)
@@ -144,6 +145,7 @@ class NodeStation(models.Model):
     status=models.BooleanField(null=True, blank=True)
     faucetState=models.CharField(max_length=100,null=True, blank=True)
     SetPointTemperature=models.FloatField(null=True,blank=True)
+    name=models.CharField(max_length=500,null=True, blank=True)
 class Neighbor(models.Model):
     Node1=models.ForeignKey(Node,on_delete=models.CASCADE,related_name='Neighbor1')
     Node2=models.ForeignKey(Node,on_delete=models.CASCADE)

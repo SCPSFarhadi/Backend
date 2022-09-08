@@ -1,3 +1,4 @@
+from sqlite3 import Date
 from django.contrib.auth.views import LogoutView
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
@@ -201,10 +202,10 @@ def minandmax(z):
         counter = counter + 1
         if float(t["homeT"]) > max:
             max =float(t["homeT"])
-            maxid = "156"
+            maxid = "1"
         if float(t["homeT"]) < min:
             min = float(t["homeT"])
-            minid = "193"
+            minid = "1"
     Avg = sum / counter
     data = {'id': maxid, 'temp': str(max)}
     channel_layer = get_channel_layer()
@@ -228,13 +229,14 @@ def minandmax(z):
 
 def nodeNewTem(z):
     for t in z["data"]:
-        data = {'nodeId': str(t["id"]), 'time': str(timezone.now()), 'temp': t["homeT"],       
-    "lastOccupancy":"156",
-    "lightSensor":"14",
-    "humiditySensor":"12",
-    "analogSensor1":"34",
-    "analogSensor2":"35",
-    "fanAir1":"of",
+        l=Node.objects.get(MacAddress=t['id']).id
+        data = {'nodeId': str(l), 'time': str(timezone.now()), 'temp': t["homeT"],       
+    "lastOccupancy":"Null",
+    "lightSensor":"Null",
+    "humiditySensor":"Null",
+    "analogSensor1":"Null",
+    "analogSensor2":"Null",
+    "fanAir1":"off",
     "fanAir2":"on",
     "hvac1":"on",
     "hvac2":"off",
@@ -247,7 +249,13 @@ def nodeNewTem(z):
                 'message': data
             }
         )
-        data = [str(t["id"]), "#332525"]
+        if t["homeT"] < t["setT"]-2:
+            data = [[str(l), "#0000ff"],["0", "#ffc0cb"]]
+        elif t["setT"]+2<t["homeT"] :
+            data = [[str(l), "#ff0000"],["0", "#ffc0cb"]]
+        else:  
+            data = [[str(l), "#00ff00"],["0", "#ffc0cb"]]
+        
         async_to_sync(channel_layer.group_send)(
             'chat_test',  # group _ name
             {
@@ -291,7 +299,8 @@ def ReciveMqtt1(z):
 
 
 def ReciveMqtt2(z):
-    mynow = timezone.now()
+    l = timezone.now()
+    mynow=datetime(l.year, l.month, l.day, l.hour, l.minute, l.second,0)
     #    k=gregorian_to_jalali(mynow.year,mynow.month,mynow.day)
     #    now=datetime.now()
     #    now=datetime(k[0],k[1],k[2],mynow.hour,mynow.minute,mynow.second)
@@ -342,7 +351,7 @@ def ReciveMqtt2(z):
 
 def on_connect(client, userdata, flags, rc):
     print("Connected to broker!")
-    client.subscribe("scps/server")
+    client.subscribe("scps/server/2")
 
 
 def on_message(client, userdata, message):
@@ -359,7 +368,7 @@ def MqttRun():
     client.on_connect = on_connect
     client.on_message = on_message
     client.connect('mqtt.giot.ir', 1883)
-    client.subscribe("scps/client")
+    client.subscribe("scps/client/2")
     client.loop_forever()
 
 
@@ -463,16 +472,21 @@ class sendLastData(APIView):
 
     def post(self, request):
         NodeArray = Node.objects.all()
-        print(str(NodeArray))
+        #print(str(NodeArray))
         for i in NodeArray:
-            if i.MacAddress == request.data["nodeid"]:
-                NodeStationArray = NodeStation.objects.filter(Node=i).order_by("DateTime")
+            #print(request.data["nodeid"])
+            if str(i.id) == str(request.data["nodeid"]):
+                NodeStationArray = NodeStation.objects.filter(Node=i)
+                g=NodeStationArray.count()
+                print(g)
                 times = []
                 temps = []
+                #print(request.data["nodeid"])
                 for z in NodeStationArray:
-                    times.append(str(z.DateTime))
-                    temps.append(str(z.HomeTemperature))
-                data = {'nodeid': str(i.MacAddress), 'times': times, 'temps': temps}
+                    if(z.id>g-500):
+                        times.append(str(z.DateTime))
+                        temps.append(str(z.HomeTemperature))
+                data = {'nodeid': str(i.id), 'times': times, 'temps': temps}
         return Response(data=data, status=status.HTTP_200_OK)
 
 
@@ -541,12 +555,13 @@ class SetConfigNode(APIView):
             fan_command.append(0)
     
         client = mqtt.Client()
+        z=Node.objects.filter(id=int(request.data["nodeid"]))[0].MacAddress
         dictsend = {
             "type": "33",
             "time": "568595",
             "conf": [
                 {
-                    "id": request.data["nodeid"],
+                    "id":z ,
                     "setT": [request.data["temp"],request.data["dongleValue1"],request.data["dongleValue2"],255],
                     "valve_command": valve_cammand,
                     "workmode": c,
@@ -580,13 +595,18 @@ class graphNodes(APIView):
         links = []
         for t in Node.objects.all():
             p = {
-                'id': str(t.MacAddress)
+                'id': str(t.id)
+            }
+            o={
+                'id': '0'
             }
             nodes.append(p)
+            nodes.append(o)
+            break
             for n in Neighbor.objects.all():
                 o = {
-                    'source': str(n.Node1.MacAddress),
-                    'target': str(n.Node2.MacAddress)
+                    'source': str(n.Node1.id),
+                    'target': str(n.Node2.id)
                 }
                 #links.append(o)
         data = {'graph': nodes, 'links': links}
@@ -674,13 +694,38 @@ class ReportNodeStation(APIView):
         to=request.data['to'].split("-")
         datet=datetime(int(to[0]),int(to[1]),int(to[2]))
         node=request.data['nodeid']
-        MyNode=Node.objects.get(MacAddress=node)
-        l=NodeStation.objects.filter(Node==MyNode)
+        MyNode=Node.objects.get(id=int(node))
+        l=NodeStation.objects.filter(Node=MyNode)
+        s=0
+        t=0
+        times = []
+        temps = []
+        for i in l:
+            if i.DateTime.year==datet.year and i.DateTime.month==datet.month and i.DateTime.day==datet.day+1 :
+                break
+            if (i.DateTime.year==datef.year and i.DateTime.month==datef.month and i.DateTime.day==datef.day) or s==1:
+                s==1
+                if t==0:
+                    times.append(str(i.DateTime))
+                    temps.append(str(i.HomeTemperature))
+                t=t+1
+                if t==10:
+                    t=0
+                
+        data = {'nodeid': str(MyNode.id), 'times': times, 'temps': temps}
             
         
-        return Response(data=[],status=status.HTTP_200_OK)
+        #z=l.filter(HomeTemperature>datef and HomeTemperature<datet)
+        return Response(data=data,status=status.HTTP_200_OK)
     
 class ReportSecurityStation(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        ffrom=request.data['from']
+        to=request.data['to']
+        return Response(data=[],status=status.HTTP_200_OK)
+class ReportRoomeTem(APIView):
     permission_classes = [AllowAny]
     
     def post(self, request):
@@ -698,7 +743,7 @@ class MatFiled(APIView):
             serializer.save()
             print("22222222222222222222222222222222")
             f=MatFile.objects.all()
-            a="http://91.98.15.243:8000/"+str(f[0].File)
+            a="http://37.156.25.234:8000/"+str(f[0].File)
             print(a)
             dictsend = {
     "type": "11",
