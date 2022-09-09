@@ -201,10 +201,10 @@ def minandmax(z):
         sum = sum + float(t["homeT"])
         counter = counter + 1
         if float(t["homeT"]) > max:
-            max =float(t["homeT"])
+            max =float(int(t["homeT"] *100)/100)
             maxid = "1"
         if float(t["homeT"]) < min:
-            min = float(t["homeT"])
+            min = float(int(t["homeT"] *100)/100)
             minid = "1"
     Avg = sum / counter
     data = {'id': maxid, 'temp': str(max)}
@@ -230,12 +230,12 @@ def minandmax(z):
 def nodeNewTem(z):
     for t in z["data"]:
         l=Node.objects.get(MacAddress=t['id']).id
-        data = {'nodeId': str(l), 'time': str(timezone.now()), 'temp': t["homeT"],       
-    "lastOccupancy":"Null",
-    "lightSensor":"Null",
-    "humiditySensor":"Null",
-    "analogSensor1":"Null",
-    "analogSensor2":"Null",
+        data = {'nodeId': str(l), 'time': str(timezone.now()), 'temp':int(t["homeT"] *100)/100 ,       
+    "lastOccupancy":t["present"],
+    "lightSensor":t["light"],
+    "humiditySensor":t["humidity"],
+    "analogSensor1":t["analogSensors"][0],
+    "analogSensor2":t["analogSensors"][1],
     "fanAir1":"off",
     "fanAir2":"on",
     "hvac1":"on",

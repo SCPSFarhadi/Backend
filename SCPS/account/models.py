@@ -145,9 +145,7 @@ class NodeStation(models.Model):
     status=models.BooleanField(null=True, blank=True)
     faucetState=models.CharField(max_length=100,null=True, blank=True)
     SetPointTemperature=models.FloatField(null=True,blank=True)
-<<<<<<< HEAD
     name=models.CharField(max_length=500,null=True, blank=True)
-=======
     humidity=models.FloatField(null=True,blank=True)
     valveState1=models.BooleanField(null=True,blank=True)
     valveState2=models.BooleanField(null=True,blank=True)
@@ -156,7 +154,7 @@ class NodeStation(models.Model):
     light=models.FloatField(null=True,blank=True)
     analog1=models.FloatField(null=True,blank=True)
     analog2=models.FloatField(null=True,blank=True)
->>>>>>> 
+    
 class Neighbor(models.Model):
     Node1=models.ForeignKey(Node,on_delete=models.CASCADE,related_name='Neighbor1')
     Node2=models.ForeignKey(Node,on_delete=models.CASCADE)
