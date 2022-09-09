@@ -230,16 +230,36 @@ def minandmax(z):
 def nodeNewTem(z):
     for t in z["data"]:
         l=Node.objects.get(MacAddress=t['id']).id
+        fanState1=""
+        fanState2=""
+        valveState1=""
+        valveState2=""
+        if t["fanState"][0]==1:
+            fanState1="on"
+        else :
+            fanState1="off"
+        if t["fanState"][1]==1:
+            fanState2="on"
+        else :
+            fanState2="off"
+        if t["valveState"][0]==1:
+            valveState1="on"
+        else :
+            valveState1="off"
+        if t["valveState"][1]==1:
+            valveState2="on"
+        else :
+            valveState2="on"
         data = {'nodeId': str(l), 'time': str(timezone.now()), 'temp':int(t["homeT"] *100)/100 ,       
-    "lastOccupancy":t["present"],
+    "lastOccupancy":l.LastTime,
     "lightSensor":t["light"],
     "humiditySensor":t["humidity"],
     "analogSensor1":t["analogSensors"][0],
     "analogSensor2":t["analogSensors"][1],
-    "fanAir1":"off",
-    "fanAir2":"on",
-    "hvac1":"on",
-    "hvac2":"off",
+    "fanAir1":fanState1,
+    "fanAir2":fanState2,
+    "hvac1":valveState1,
+    "hvac2":valveState2,
     "parameter":"2"}
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
@@ -336,6 +356,30 @@ def ReciveMqtt2(z):
         nodes.valveState2=t["valveState"][1]
         nodes.analog1=t["analogSensors"][0]
         nodes.analog2=t["analogSensors"][1]
+        nodes.light=t["light"]
+        if t["present"] < 5:
+            nodes.LastTime=mynow
+            node.lastTime=mynow
+        else :
+            nodes.LastTime=node.lastTime
+        if t["fanState"][0]==1:
+            nodes.fanState1=True
+        else :
+            nodes.fanState1=False
+        if t["fanState"][1]==1:
+            nodes.fanState2=True
+        else :
+            nodes.fanState2=False
+        if t["valveState"][0]==1:
+            nodes.valveState1=True
+        else :
+            nodes.valveState1=False
+        if t["valveState"][1]==1:
+            nodes.valveState2=True
+        else :
+            nodes.valveState2=False
+        
+        
         # nodes.faucetState=t["faucetState"]
         nodes.SetPointTemperature = t["setT"]
         nodes.DateTime = mynow
@@ -560,7 +604,7 @@ class SetConfigNode(APIView):
             fan_command.append(1)
         else:
             fan_command.append(0)
-    
+        print(request.data)
         client = mqtt.Client()
         z=Node.objects.filter(id=int(request.data["nodeid"]))[0].MacAddress
         dictsend = {
@@ -602,7 +646,7 @@ class graphNodes(APIView):
         links = []
         for t in Node.objects.all():
             p = {
-                'id': str(t.id)
+                'id': str(4)
             }
             o={
                 'id': '0'

@@ -135,8 +135,9 @@ class Node(models.Model):
     status=models.BooleanField(null=True, blank=True)
     mode=models.CharField(max_length=500,null=True, blank=True)
     name=models.CharField(max_length=500,null=True, blank=True)
+    LastTime=models.DateTimeField(null=True, blank=True)
 class NodeStation(models.Model):
-    DateTime=models.DateTimeField()
+    DateTime=models.DateTimeField(null=True, blank=True)
     Node=models.ForeignKey(Node,on_delete=models.CASCADE)
     Presence=models.IntegerField(null=True, blank=True)
     ErrorId=models.IntegerField(null=True, blank=True)
@@ -154,6 +155,9 @@ class NodeStation(models.Model):
     light=models.FloatField(null=True,blank=True)
     analog1=models.FloatField(null=True,blank=True)
     analog2=models.FloatField(null=True,blank=True)
+    fanState1=models.BooleanField(null=True,blank=True)
+    fanState2=models.BooleanField(null=True,blank=True)
+    LastTime=models.DateTimeField(null=True, blank=True)
     
 class Neighbor(models.Model):
     Node1=models.ForeignKey(Node,on_delete=models.CASCADE,related_name='Neighbor1')
@@ -185,6 +189,7 @@ class FanCoil(models.Model):
     valv=models.BooleanField(null=True, blank=True)
     valvstate=models.BooleanField(null=True, blank=True)
     Temperature=models.FloatField(null=True, blank=True)
+    LastTime=models.FloatField(null=True,blank=True)
 
 class FanCoilStation(models.Model):
     FanCoilId=models.ForeignKey(FanCoil,on_delete=models.CASCADE)
