@@ -317,9 +317,16 @@ def ReciveMqtt2(z):
         #f = s / l
         #for u in t["valveState"]:
         #    x[l].valvstate = u
-        nodes.FanCoilTemperature = 154
+        nodes.FanCoilTemperature = (t["fancoilT"][0]+t["fancoilT"][1])/2
         nodes.HomeTemperature = t["homeT"]
         nodes.Presence = t["present"]
+        nodes.FanCoil1=t["fancoilT"][0]
+        nodes.FanCoil2=t["fancoilT"][1]
+        nodes.humidity=t["humidity"]
+        nodes.valveState1=t["valveState"][0]
+        nodes.valveState2=t["valveState"][1]
+        nodes.analog1=t["analogSensors"][0]
+        nodes.analog2=t["analogSensors"][1]
         # nodes.faucetState=t["faucetState"]
         nodes.SetPointTemperature = t["setT"]
         nodes.DateTime = mynow
@@ -342,7 +349,7 @@ def ReciveMqtt2(z):
 
 def on_connect(client, userdata, flags, rc):
     print("Connected to broker!")
-    client.subscribe("scps/server")
+    client.subscribe("scps/server/2")
 
 
 def on_message(client, userdata, message):
@@ -359,7 +366,7 @@ def MqttRun():
     client.on_connect = on_connect
     client.on_message = on_message
     client.connect('mqtt.giot.ir', 1883)
-    client.subscribe("scps/client")
+    client.subscribe("scps/client/2")
     client.loop_forever()
 
 
