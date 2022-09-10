@@ -202,10 +202,10 @@ def minandmax(z):
         counter = counter + 1
         if float(t["homeT"]) > max:
             max =float(int(t["homeT"] *100)/100)
-            maxid = "1"
+            maxid = Node.objects.get(MacAddress=t['id']).id
         if float(t["homeT"]) < min:
             min = float(int(t["homeT"] *100)/100)
-            minid = "1"
+            minid = Node.objects.get(MacAddress=t['id']).id
     Avg = sum / counter
     data = {'id': maxid, 'temp': str(max)}
     channel_layer = get_channel_layer()
@@ -230,6 +230,7 @@ def minandmax(z):
 def nodeNewTem(z):
     for t in z["data"]:
         l=Node.objects.get(MacAddress=t['id']).id
+        p=Node.objects.get(MacAddress=t['id'])
         fanState1=""
         fanState2=""
         valveState1=""
@@ -249,10 +250,11 @@ def nodeNewTem(z):
         if t["valveState"][1]==1:
             valveState2="on"
         else :
-            valveState2="on"
-        data = {'nodeId': str(l), 'time': str(timezone.now()), 'temp':int(t["homeT"] *100)/100 ,       
-    "lastOccupancy":l.LastTime,
-    "lightSensor":t["light"],
+            valveState2="off"
+        j=int(t["homeT"]*100)/100
+        data = {'nodeId': str(l), 'time': str(timezone.now()), 'temp':j,       
+    "lastOccupancy":str(p.LastTime),
+    "lightSensor":int(t["light"]),
     "humiditySensor":t["humidity"],
     "analogSensor1":t["analogSensors"][0],
     "analogSensor2":t["analogSensors"][1],
@@ -260,7 +262,8 @@ def nodeNewTem(z):
     "fanAir2":fanState2,
     "hvac1":valveState1,
     "hvac2":valveState2,
-    "parameter":"2"}
+    "parameter":"2",
+    "setPoint":t["setT"]}
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
             'chat_test',  # group _ name
@@ -346,11 +349,11 @@ def ReciveMqtt2(z):
         #f = s / l
         #for u in t["valveState"]:
         #    x[l].valvstate = u
-        nodes.FanCoilTemperature = (t["fancoilT"][0]+t["fancoilT"][1])/2
-        nodes.HomeTemperature = t["homeT"]
+        nodes.FanCoilTemperature = int(((t["fancoilT"][0]+t["fancoilT"][1])/2)*100)/100
+        nodes.HomeTemperature = int(t["homeT"]*100)/100
         nodes.Presence = t["present"]
-        nodes.FanCoil1=t["fancoilT"][0]
-        nodes.FanCoil2=t["fancoilT"][1]
+        nodes.FanCoil1=int(t["fancoilT"][0]*100)/100
+        nodes.FanCoil2=int(t["fancoilT"][1]*100)/100
         nodes.humidity=t["humidity"]
         nodes.valveState1=t["valveState"][0]
         nodes.valveState2=t["valveState"][1]
@@ -359,9 +362,9 @@ def ReciveMqtt2(z):
         nodes.light=t["light"]
         if t["present"] < 5:
             nodes.LastTime=mynow
-            node.lastTime=mynow
+            node.LastTime=mynow
         else :
-            nodes.LastTime=node.lastTime
+            nodes.LastTime=node.LastTime
         if t["fanState"][0]==1:
             nodes.fanState1=True
         else :
@@ -505,7 +508,7 @@ class sendLastData(APIView):
                     en = 1
                     continue
                 Avg = sum / counter
-                l={'date': str(d), 'tem': Avg}
+                l={'date': str(d), 'tem': int(int(Avg*100)/100)}
                 p.append(l)
                 channel_layer = get_channel_layer()
                 d = i.DateTime
@@ -626,7 +629,7 @@ class SetConfigNode(APIView):
         json_object = json.dumps(dictsend)
         print(json_object)
         client.connect('mqtt.giot.ir', 1883)
-        client.publish('scps/server', json_object)
+        client.publish('scps/server/2', json_object)
         return Response(status=status.HTTP_200_OK)
 
 
@@ -646,7 +649,7 @@ class graphNodes(APIView):
         links = []
         for t in Node.objects.all():
             p = {
-                'id': str(4)
+                'id': str(t.id)
             }
             o={
                 'id': '0'
@@ -693,7 +696,7 @@ class controlPanel(APIView):
         json_object = json.dumps(dictsend)
         print(json_object)
         client.connect('mqtt.giot.ir', 1883)
-        client.publish('scps/server', json_object)
+        client.publish('scps/server/2', json_object)
         return Response(status=status.HTTP_200_OK)
     
 
