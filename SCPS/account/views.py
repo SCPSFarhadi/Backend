@@ -1,4 +1,5 @@
 from sqlite3 import Date
+from warnings import catch_warnings
 from django.contrib.auth.views import LogoutView
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
@@ -229,6 +230,16 @@ def minandmax(z):
 
 def nodeNewTem(z):
     for t in z["data"]:
+        mode=""
+        if t["workmode"]==0:
+            mode="Sleep"
+        if t["workmode"]==1:
+            mode="EnergySaving"
+        if t["workmode"]==2:
+            mode="Maintenance"
+        if t["workmode"]==3:
+            mode="Classic"
+        
         l=Node.objects.get(MacAddress=t['id']).id
         p=Node.objects.get(MacAddress=t['id'])
         fanState1=""
@@ -239,18 +250,25 @@ def nodeNewTem(z):
             fanState1="on"
         else :
             fanState1="off"
-        if t["fanState"][1]==1:
-            fanState2="on"
-        else :
-            fanState2="off"
+        try:
+            if t["fanState"][1]==1:
+                fanState2="on"
+            else:
+                fanState2="off"
+        except:
+            u=0
         if t["valveState"][0]==1:
             valveState1="on"
         else :
             valveState1="off"
-        if t["valveState"][1]==1:
-            valveState2="on"
-        else :
-            valveState2="off"
+        try :
+            if t["valveState"][1]==1:
+                valveState2="on"
+            else :
+                valveState2="off"
+        except:
+            u=0
+        
         j=int(t["homeT"]*100)/100
         data = {'nodeId': str(l), 'time': str(timezone.now()), 'temp':j,       
     "lastOccupancy":str(p.LastTime),
@@ -263,6 +281,7 @@ def nodeNewTem(z):
     "hvac1":valveState1,
     "hvac2":valveState2,
     "parameter":"2",
+    "mode":mode,
     "setPoint":t["setT"]}
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
@@ -349,14 +368,14 @@ def ReciveMqtt2(z):
         #f = s / l
         #for u in t["valveState"]:
         #    x[l].valvstate = u
-        nodes.FanCoilTemperature = int(((t["fancoilT"][0]+t["fancoilT"][1])/2)*100)/100
+        nodes.FanCoilTemperature = int(((t["fancoilT"][0]+t["fancoilT"][0])/2)*100)/100
         nodes.HomeTemperature = int(t["homeT"]*100)/100
         nodes.Presence = t["present"]
         nodes.FanCoil1=int(t["fancoilT"][0]*100)/100
-        nodes.FanCoil2=int(t["fancoilT"][1]*100)/100
+        #nodes.FanCoil2=int(t["fancoilT"][1]*100)/100
         nodes.humidity=t["humidity"]
         nodes.valveState1=t["valveState"][0]
-        nodes.valveState2=t["valveState"][1]
+        #nodes.valveState2=t["valveState"][1]
         nodes.analog1=t["analogSensors"][0]
         nodes.analog2=t["analogSensors"][1]
         nodes.light=t["light"]
@@ -369,24 +388,25 @@ def ReciveMqtt2(z):
             nodes.fanState1=True
         else :
             nodes.fanState1=False
-        if t["fanState"][1]==1:
-            nodes.fanState2=True
-        else :
-            nodes.fanState2=False
+        #if t["fanState"][1]==1:
+        #    nodes.fanState2=True
+        #else :
+        #    nodes.fanState2=False
         if t["valveState"][0]==1:
             nodes.valveState1=True
         else :
             nodes.valveState1=False
-        if t["valveState"][1]==1:
-            nodes.valveState2=True
-        else :
-            nodes.valveState2=False
+        #if t["valveState"][1]==1:
+        #    nodes.valveState2=True
+        #else :
+        #    nodes.valveState2=False
         
         
         # nodes.faucetState=t["faucetState"]
         nodes.SetPointTemperature = t["setT"]
         nodes.DateTime = mynow
         nodes.save()
+        node.save()
     # for t in z["errors"]:
     #     node2 = Node.objects.get(MacAddress=t["id"])
     #     node2.ErrorId = t["code"]
@@ -475,7 +495,7 @@ class LogoutAPIView(generics.GenericAPIView):
     print("in logout")
     serializer_class = LogoutSerializer
 
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -566,12 +586,15 @@ class SetConfigNode(APIView):
             #MyNode.status = False
             c = 0
             a = 0
-        if request.data["optimalMode"] == True:
+        if request.data["energysavingMode"] == True:
             #MyNode.mode = "optimalMode"
             c = 1
         if request.data["manualMode"] == True:
             #MyNode.mode = "manualMode"
             c = 2
+        if request.data["classicMode"] == True:
+            #MyNode.mode = "manualMode"
+            c = 3
         
     #    NodeArray = Node.objects.all()
     #    print(str(NodeArray))
