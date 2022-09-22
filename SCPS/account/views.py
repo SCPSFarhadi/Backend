@@ -1,3 +1,4 @@
+from math import factorial
 from sqlite3 import Date
 from warnings import catch_warnings
 from django.contrib.auth.views import LogoutView
@@ -385,55 +386,60 @@ def ReciveMqtt1(z):
     Graphws(z)
 
 
-def ReciveMqtt2(z):
-    l = timezone.now()
-    mynow=datetime(l.year, l.month, l.day, l.hour, l.minute, l.second,0)
-    #    k=gregorian_to_jalali(mynow.year,mynow.month,mynow.day)
-    #    now=datetime.now()
-    #    now=datetime(k[0],k[1],k[2],mynow.hour,mynow.minute,mynow.second)
-    print(z)
-    for t in z["data"]:
+def ReciveMqtt2(Data):
+    timeZone = timezone.now()
+    dateTimeNow=datetime(timeZone.year, timeZone.month, timeZone.day, timeZone.hour, timeZone.minute, timeZone.second,0)
+
+    print(Data)
+    for recieveData in Data["data"]:
         nodes = NodeStation()
-        nodeid = t["id"]
+        nodeid = recieveData["id"]
+        
         try:
             node = Node.objects.get(MacAddress=nodeid)
         except :
             node=Node()
-            node.MacAddress=t["id"]
+            node.MacAddress=recieveData["id"]
             node.save()
+            
         nodes.Node = node
         s = 0
         l = 0
-        #FanCoils = FanCoil.objects.get()
-        #x = FanCoil.objects.filter(Node=node)
-        #for u in t["fancoilT"]:
-        #    x[l].Temperature = u
-        #    s = s + u
-        #    l = l + 1
-        #f = s / l
-        #for u in t["valveState"]:
-        #    x[l].valvstate = u
-        nodes.FanCoilTemperature = int(((t["fancoilT"][0]+t["fancoilT"][0])/2)*100)/100
-        nodes.HomeTemperature = int(t["homeT"]*100)/100
-        nodes.Presence = t["present"]
-        nodes.FanCoil1=int(t["fancoilT"][0]*100)/100
         
-        nodes.FanCoil2=int(t["fancoilT"][1]*100)/100
+        # check number of parameter sent by the gateway 
+        if( len(recieveData["fancoilT"]) != 2 ):
+            if len(recieveData["fancoilT"]) == 1:
+                recieveData['fancoilT'].append(0)
+            else: # means if 0
+                recieveData['fancoilT'] = [0,0]
+                
+        if( len(recieveData["fanState"]) != 2 ):
+            if len(recieveData["fanState"]) == 1:
+                recieveData['fanState'].append(0)
+            else: # means if 0
+                recieveData['fanState'] = [0,0]
         
-        nodes.humidity=t["humidity"]
-        nodes.valveState1=t["valveState"][0]
+        nodes.FanCoilTemperature = int(((recieveData["fancoilT"][0]+recieveData["fancoilT"][0])/2)*100)/100
+        nodes.HomeTemperature = int(recieveData["homeT"]*100)/100
+        nodes.Presence = recieveData["present"]
+        nodes.FanCoil1=int(recieveData["fancoilT"][0]*100)/100
+        
+        nodes.FanCoil2=int(recieveData["fancoilT"][1]*100)/100
+        
+        nodes.humidity=recieveData["humidity"]
+        nodes.valveState1=recieveData["valveState"][0]
         #nodes.valveState2=t["valveState"][1]
-        nodes.analog1=t["analogSensors"][0]
-        nodes.analog2=t["analogSensors"][1]
-        nodes.light=int(t["light"]*100)/100
+        nodes.analog1=recieveData["analogSensors"][0]
+        nodes.analog2=recieveData["analogSensors"][1]
+        nodes.light=int(recieveData["light"]*100)/100
         
-        if t["present"] < 5:
-            nodes.LastTime=mynow
-            node.LastTime=mynow
+        if recieveData["present"] < 5:
+            nodes.LastTime=dateTimeNow
+            node.LastTime=dateTimeNow
         else :
             nodes.LastTime=node.LastTime
             
-        if (t["fanState"][0]) and t["fanState"][0]==1:
+        if (recieveData["fanState"][0]) and recieveData["fanState"][0]==1:
             nodes.fanState1=True
         else :
             nodes.fanState1=False
@@ -441,7 +447,7 @@ def ReciveMqtt2(z):
         #    nodes.fanState2=True
         #else :
         #    nodes.fanState2=False
-        if t["valveState"][0]==1:
+        if recieveData["valveState"][0]==1:
             nodes.valveState1=True
         else :
             nodes.valveState1=False
@@ -452,8 +458,8 @@ def ReciveMqtt2(z):
         
         
         # nodes.faucetState=t["faucetState"]
-        nodes.SetPointTemperature = t["setT"]
-        nodes.DateTime = mynow
+        nodes.SetPointTemperature = recieveData["setT"]
+        nodes.DateTime = dateTimeNow
         nodes.save()
         node.save()
     # for t in z["errors"]:
@@ -466,10 +472,10 @@ def ReciveMqtt2(z):
     #   Securitys.Name=t["name"]
     #  Securitys.Value=t["value"]
     # Securitys.save()
-    minandmax(z)
-    pychart(z)
-    roomTem(z)
-    nodeNewTem(z)
+    minandmax(Data)
+    pychart(Data)
+    roomTem(Data)
+    nodeNewTem(Data)
 
 
 def on_connect(client, userdata, flags, rc):
