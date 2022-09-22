@@ -301,10 +301,8 @@ def nodeNewTem(z):
         print(light)
  
         j=int(t["homeT"]*100)/100
-        l = timezone.now()
-        DateNow=datetime(l.year, l.month, l.day, l.hour, l.minute, l.second,0)
-        data = {'nodeId': str(l), 'time': str(timezone.now()), 'temp':j,       
-        "lastOccupancy":str(DateNow - p.LastTime),
+        data = {'nodeId': str(l), 'time': str(timezone.now()), 'temp':j,        
+        "lastOccupancy":str(p.LastTime),
         "lightSensor":light,
         "humiditySensor":humidity,
         "analogSensor1":analog1,
@@ -419,7 +417,9 @@ def ReciveMqtt2(z):
         nodes.HomeTemperature = int(t["homeT"]*100)/100
         nodes.Presence = t["present"]
         nodes.FanCoil1=int(t["fancoilT"][0]*100)/100
+        
         nodes.FanCoil2=int(t["fancoilT"][1]*100)/100
+        
         nodes.humidity=t["humidity"]
         nodes.valveState1=t["valveState"][0]
         #nodes.valveState2=t["valveState"][1]
