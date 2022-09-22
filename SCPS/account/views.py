@@ -235,44 +235,44 @@ def minandmax(z):
     )
 
 
-def nodeNewTem(z):
-    for t in z["data"]:
+def nodeNewTem(Data):
+    for RecieveData in Data["data"]:
         mode=""
-        if t["workmode"]==0:
+        if RecieveData["workmode"]==0:
             mode="Sleep"
-        if t["workmode"]==1:
+        if RecieveData["workmode"]==1:
             mode="EnergySaving"
-        if t["workmode"]==2:
+        if RecieveData["workmode"]==2:
             mode="Maintenance"
-        if t["workmode"]==3:
+        if RecieveData["workmode"]==3:
             mode="Maintenance"
-        if t["workmode"]==4:
+        if RecieveData["workmode"]==4:
             mode="Classic"
         
-        l=Node.objects.get(MacAddress=t['id']).id
-        p=Node.objects.get(MacAddress=t['id'])
+        l=Node.objects.get(MacAddress=RecieveData['id']).id
+        p=Node.objects.get(MacAddress=RecieveData['id'])
         zp=Security.objects.all()[0].Name
         fanState1=""
         fanState2=""
         valveState1=""
         valveState2=""
-        if t["fanState"][0]==1:
+        if RecieveData["fanState"][0]==1:
             fanState1="on"
         else :
             fanState1="off"
         try:
-            if t["fanState"][1]==1:
+            if RecieveData["fanState"][1]==1:
                 fanState2="on"
             else:
                 fanState2="off"
         except:
             u=0
-        if t["valveState"][0]==1:
+        if RecieveData["valveState"][0]==1:
             valveState1="on"
         else :
             valveState1="off"
         try :
-            if t["valveState"][1]==1:
+            if RecieveData["valveState"][1]==1:
                 valveState2="on"
             else :
                 valveState2="off"
@@ -282,26 +282,26 @@ def nodeNewTem(z):
         humidity=""
         analog1=""
         analog2=""
-        print(t["light"])
-        if t["light"]== -1 or t["light"]== 65535:
+        print(RecieveData["light"])
+        if RecieveData["light"]== -1 or RecieveData["light"]== 65535:
             light="Null"
         else:
-            light= str(int(t["light"]*100)/100)
-        if t["humidity"]==255:
+            light= str(int(RecieveData["light"]*100)/100)
+        if RecieveData["humidity"]==255:
             humidity="Null"
         else :
-            humidity=str(int(t["humidity"]*100)/100)
-        if t["analogSensors"][0]==65535:
+            humidity=str(int(RecieveData["humidity"]*100)/100)
+        if RecieveData["analogSensors"][0]==65535:
             analog1="Null"
         else :
-            analog1=str(t["analogSensors"][0])
-        if t["analogSensors"][1]==65535:
+            analog1=str(RecieveData["analogSensors"][0])
+        if RecieveData["analogSensors"][1]==65535:
             analog2="Null"
         else :
-            analog2=str(t["analogSensors"][1])
+            analog2=str(RecieveData["analogSensors"][1])
         print(light)
  
-        j=int(t["homeT"]*100)/100
+        j=int(RecieveData["homeT"]*100)/100
         data = {'nodeId': str(l), 'time': str(timezone.now()), 'temp':j,        
         "lastOccupancy":str(p.LastTime),
         "lightSensor":light,
@@ -312,9 +312,11 @@ def nodeNewTem(z):
         "fanAir2":fanState2,
         "hvac1":valveState1,
         "hvac2":valveState2,
-        "parameter":t["numFans"],
+        "parameter":RecieveData["numFans"],
         "mode":mode,
-        "setPoint":t["setT"]}
+        "setPoint":RecieveData["setT"],
+        "fanAir1Temp":str(int(RecieveData["fancoilT"][0]*100)/100)
+        }
     channel_layer = get_channel_layer()
     if zp==str(l):
         async_to_sync(channel_layer.group_send)(
@@ -329,19 +331,19 @@ def nodeNewTem(z):
     o=0
     xk=Node.objects.all().count()
     data=[]
-    for t in np:
+    for RecieveData in np:
         o=o+1
         if o<xl-xk+1:
             continue
         print("jkdfls")
-        if t.HomeTemperature+2<t.SetPointTemperature:
-            data.append([str(t.Node.id), "#0000ff"])
+        if RecieveData.HomeTemperature+2<RecieveData.SetPointTemperature:
+            data.append([str(RecieveData.Node.id), "#0000ff"])
             #data = [[str(l), "#0000ff"],["0", "#ffc0cb"]]
-        elif t.HomeTemperature+2<t.SetPointTemperature :
-            data.append([str(t.Node.id), "#ff0000"])
+        elif RecieveData.HomeTemperature+2<RecieveData.SetPointTemperature :
+            data.append([str(RecieveData.Node.id), "#ff0000"])
             #data = [[str(l), "#ff0000"],["0", "#ffc0cb"]]
         else:  
-            data.append([str(t.Node.id), "#00ff00"])
+            data.append([str(RecieveData.Node.id), "#00ff00"])
             #data = [[str(l), "#00ff00"],["0", "#ffc0cb"]]
     data.append(["0", "#ffc0cb"])
     async_to_sync(channel_layer.group_send)(
