@@ -198,15 +198,21 @@ def minandmax(z):
     counter = 0
     min = 10000000
     max = 0
-    for t in z["data"]:
-        sum = sum + float(t["homeT"])
+    np=NodeStation.objects.all()
+    xl=np.count()
+    o=0
+    for t in np:
+        o=o+1
+        if o<xl-5:
+            continue
+        sum = sum + t.HomeTemperature
         counter = counter + 1
-        if float(t["homeT"]) > max:
-            max =float(int(t["homeT"] *100)/100)
-            maxid = Node.objects.get(MacAddress=t['id']).id
-        if float(t["homeT"]) < min:
-            min = float(int(t["homeT"] *100)/100)
-            minid = Node.objects.get(MacAddress=t['id']).id
+        if t.HomeTemperature > max:
+            max =t.HomeTemperature
+            maxid = t.Node.id
+        if t.HomeTemperature < min:
+            min = t.HomeTemperature
+            minid = t.Node.id
     Avg = sum / counter
     data = {'id': maxid, 'temp': str(max)}
     channel_layer = get_channel_layer()
@@ -238,10 +244,13 @@ def nodeNewTem(z):
         if t["workmode"]==2:
             mode="Maintenance"
         if t["workmode"]==3:
+            mode="Maintenance"
+        if t["workmode"]==4:
             mode="Classic"
         
         l=Node.objects.get(MacAddress=t['id']).id
         p=Node.objects.get(MacAddress=t['id'])
+        zp=Security.objects.all()[0].Name
         fanState1=""
         fanState2=""
         valveState1=""
@@ -268,22 +277,47 @@ def nodeNewTem(z):
                 valveState2="off"
         except:
             u=0
-        
+        light=""
+        humidity=""
+        analog1=""
+        analog2=""
+        print(t["light"])
+        if t["light"]== -1 or t["light"]== 65535:
+            light="Null"
+        else:
+            light= str(int(t["light"]*100)/100)
+        if t["humidity"]==255:
+            humidity="Null"
+        else :
+            humidity=str(int(t["humidity"]*100)/100)
+        if t["analogSensors"][0]==65535:
+            analog1="Null"
+        else :
+            analog1=str(t["analogSensors"][0])
+        if t["analogSensors"][1]==65535:
+            analog2="Null"
+        else :
+            analog2=str(t["analogSensors"][1])
+        print(light)
+ 
         j=int(t["homeT"]*100)/100
+        l = timezone.now()
+        DateNow=datetime(l.year, l.month, l.day, l.hour, l.minute, l.second,0)
         data = {'nodeId': str(l), 'time': str(timezone.now()), 'temp':j,       
-    "lastOccupancy":str(p.LastTime),
-    "lightSensor":int(t["light"]),
-    "humiditySensor":t["humidity"],
-    "analogSensor1":t["analogSensors"][0],
-    "analogSensor2":t["analogSensors"][1],
-    "fanAir1":fanState1,
-    "fanAir2":fanState2,
-    "hvac1":valveState1,
-    "hvac2":valveState2,
-    "parameter":"2",
-    "mode":mode,
-    "setPoint":t["setT"]}
-        channel_layer = get_channel_layer()
+        "lastOccupancy":str(DateNow - p.LastTime),
+        "lightSensor":light,
+        "humiditySensor":humidity,
+        "analogSensor1":analog1,
+        "analogSensor2":analog2,
+        "fanAir1":fanState1,
+        "fanAir2":fanState2,
+        "hvac1":valveState1,
+        "hvac2":valveState2,
+        "parameter":t["numFans"],
+        "mode":mode,
+        "setPoint":t["setT"]}
+    channel_layer = get_channel_layer()
+    if zp==str(l):
         async_to_sync(channel_layer.group_send)(
             'chat_test',  # group _ name
             {
@@ -291,20 +325,33 @@ def nodeNewTem(z):
                 'message': data
             }
         )
-        if t["homeT"] < t["setT"]-2:
-            data = [[str(l), "#0000ff"],["0", "#ffc0cb"]]
-        elif t["setT"]+2<t["homeT"] :
-            data = [[str(l), "#ff0000"],["0", "#ffc0cb"]]
+    np=NodeStation.objects.all()
+    xl=np.count()
+    o=0
+    xk=Node.objects.all().count()
+    data=[]
+    for t in np:
+        o=o+1
+        if o<xl-xk+1:
+            continue
+        print("jkdfls")
+        if t.HomeTemperature+2<t.SetPointTemperature:
+            data.append([str(t.Node.id), "#0000ff"])
+            #data = [[str(l), "#0000ff"],["0", "#ffc0cb"]]
+        elif t.HomeTemperature+2<t.SetPointTemperature :
+            data.append([str(t.Node.id), "#ff0000"])
+            #data = [[str(l), "#ff0000"],["0", "#ffc0cb"]]
         else:  
-            data = [[str(l), "#00ff00"],["0", "#ffc0cb"]]
-        
-        async_to_sync(channel_layer.group_send)(
-            'chat_test',  # group _ name
-            {
-                'type': 'nodeColor',
-                'message': data
-            }
-        )
+            data.append([str(t.Node.id), "#00ff00"])
+            #data = [[str(l), "#00ff00"],["0", "#ffc0cb"]]
+    data.append(["0", "#ffc0cb"])
+    async_to_sync(channel_layer.group_send)(
+        'chat_test',  # group _ name
+        {
+            'type': 'nodeColor',
+            'message': data
+        }
+    )
 
 
 def ReciveMqtt1(z):
@@ -372,19 +419,21 @@ def ReciveMqtt2(z):
         nodes.HomeTemperature = int(t["homeT"]*100)/100
         nodes.Presence = t["present"]
         nodes.FanCoil1=int(t["fancoilT"][0]*100)/100
-        #nodes.FanCoil2=int(t["fancoilT"][1]*100)/100
+        nodes.FanCoil2=int(t["fancoilT"][1]*100)/100
         nodes.humidity=t["humidity"]
         nodes.valveState1=t["valveState"][0]
         #nodes.valveState2=t["valveState"][1]
         nodes.analog1=t["analogSensors"][0]
         nodes.analog2=t["analogSensors"][1]
-        nodes.light=t["light"]
+        nodes.light=int(t["light"]*100)/100
+        
         if t["present"] < 5:
             nodes.LastTime=mynow
             node.LastTime=mynow
         else :
             nodes.LastTime=node.LastTime
-        if t["fanState"][0]==1:
+            
+        if (t["fanState"][0]) and t["fanState"][0]==1:
             nodes.fanState1=True
         else :
             nodes.fanState1=False
@@ -425,7 +474,7 @@ def ReciveMqtt2(z):
 
 def on_connect(client, userdata, flags, rc):
     print("Connected to broker!")
-    client.subscribe("scps/server/2")
+    client.subscribe("scps/client/1")
 
 
 def on_message(client, userdata, message):
@@ -441,7 +490,7 @@ def on_message(client, userdata, message):
 def MqttRun():
     client.on_connect = on_connect
     client.on_message = on_message
-    client.connect('mqtt.giot.ir', 1883)
+    client.connect('127.0.0.1', 1883)
     client.subscribe("scps/client/2")
     client.loop_forever()
 
@@ -550,6 +599,9 @@ class sendLastData(APIView):
         for i in NodeArray:
             #print(request.data["nodeid"])
             if str(i.id) == str(request.data["nodeid"]):
+                l=Security.objects.all()[0]
+                l.Name=str(i.id)
+                l.save()
                 NodeStationArray = NodeStation.objects.filter(Node=i)
                 g=NodeStationArray.count()
                 print(g)
@@ -572,6 +624,7 @@ class SetConfigNode(APIView):
         b = 0
         c = -1
         #valve_cammand = []
+        print(request.data)
         dictsend = {}
         #MyNode = Node.objects.get(MacAddress=request.data["nodeid"])
         #MyNode.SetPointTemperature = request.data["temp"]
@@ -594,7 +647,7 @@ class SetConfigNode(APIView):
             c = 2
         if request.data["classicMode"] == True:
             #MyNode.mode = "manualMode"
-            c = 3
+            c = 4
         
     #    NodeArray = Node.objects.all()
     #    print(str(NodeArray))
@@ -630,6 +683,23 @@ class SetConfigNode(APIView):
             fan_command.append(1)
         else:
             fan_command.append(0)
+        z=fan_command
+        try :
+            if request.data["fanspeed"]=='low':
+                fan_command.clear()
+                fan_command.append(0)
+                fan_command.append(0)
+            if request.data["fanspeed"]=='medium':
+                fan_command.clear()
+                fan_command.append(1)
+                fan_command.append(0)
+            if request.data["fanspeed"]=='high':
+                fan_command.clear()
+                fan_command.append(0)
+                fan_command.append(1)
+        except:
+            pass
+            
         print(request.data)
         client = mqtt.Client()
         z=Node.objects.filter(id=int(request.data["nodeid"]))[0].MacAddress
@@ -639,7 +709,7 @@ class SetConfigNode(APIView):
             "conf": [
                 {
                     "id":z ,
-                    "setT": [request.data["temp"],request.data["dongleValue1"],request.data["dongleValue2"],255],
+                    "setT": [int(request.data["temp"]),int(request.data["dongleValue1"]),int(request.data["dongleValue2"]),255],
                     "valve_command": valve_cammand,
                     "workmode": c,
                     "permission": b,
@@ -651,14 +721,13 @@ class SetConfigNode(APIView):
         }
         json_object = json.dumps(dictsend)
         print(json_object)
-        client.connect('mqtt.giot.ir', 1883)
-        client.publish('scps/server/2', json_object)
+        client.connect('127.0.0.1', 1883)
+        client.publish('scps/server/1', json_object)
         return Response(status=status.HTTP_200_OK)
 
 
 class MqttRunCommand(APIView):
     permission_classes = [AllowAny]
-
     def get(self, request):
         x = threading.Thread(target=MqttRun)
         x.start()
@@ -674,17 +743,16 @@ class graphNodes(APIView):
             p = {
                 'id': str(t.id)
             }
-            o={
-                'id': '0'
-            }
             nodes.append(p)
-            nodes.append(o)
-            break
-            for n in Neighbor.objects.all():
-                o = {
-                    'source': str(n.Node1.id),
-                    'target': str(n.Node2.id)
-                }
+        o={
+            'id': '0'
+        }
+        nodes.append(o)
+        #    for n in Neighbor.objects.all():
+        #        o = {
+        #            'source': str(n.Node1.id),
+        #            'target': str(n.Node2.id)
+        #        }
                 #links.append(o)
         data = {'graph': nodes, 'links': links}
         channel_layer = get_channel_layer()
@@ -701,25 +769,47 @@ class controlPanel(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        print(request.data)
         hvacmode=request.data['hvacmode']
         selectmode=request.data['selectmode']
         fan=request.data['fan']
-        setpoint=request.data['setpoint']
+        m=0
+        setpoint=""
+        if selectmode=='sleep':
+            setpoint=20
+            m=0
+        else:
+            setpoint=int(request.data['setpoint'])
+        if selectmode=='classic':
+            m=4
+        if selectmode=='energysaving':
+            m=1
+        if selectmode=='maintenance':
+            m=2
+        if hvacmode=="cooling":
+            h=1
+        else:
+            h=0
         dictsend = {
-    "type": "34",
-    "time": "155631654",
-    "conf": {
-
-             "out_temp":36.58,
-             "engine_temp":25,
-             "other_temp":25,
+            "type": "33",
+            "time": "568595",
+            "conf": [
+                {
+                    "id":"ff:ff:ff:ff:ff:ff" ,
+                    "setT": [setpoint,255,255,255],
+                    "valve_command": [1,1],
+                    "workmode": m,
+                    "permission": "1",
+                    "hvac": h,
+                    "fan_command": [1,1],
+                }
+            ],
+            "equ": {}
         }
-    
-}
         json_object = json.dumps(dictsend)
         print(json_object)
-        client.connect('mqtt.giot.ir', 1883)
-        client.publish('scps/server/2', json_object)
+        client.connect('127.0.0.1', 1883)
+        client.publish('scps/server/1', json_object)
         return Response(status=status.HTTP_200_OK)
     
 
@@ -746,19 +836,20 @@ class weather(APIView):
         x = requests.get('https://one-api.ir/weather/?token={62cdc2455c46c6.60515960}&action=currentbylocation&lat={' + b + '}&lon={' + a + '}')
         print(x.text)
         dictsend = {
-    "type": "34",
-    "time": "155631654",
-    "conf": {
+        "type": "34",
+        "time": "155631654",
+        "conf": {
 
-             "out_temp":36.58,
-             "engine_temp":25,
-             "other_temp":25,
+                "out_temp":36.58,
+                "engine_temp":25,
+                "other_temp":25,
         }
-    
+
+
 }
         json_object = json.dumps(dictsend)
         print(json_object)
-        client.connect('mqtt.giot.ir', 1883)
+        client.connect('127.0.0.1', 1883)
         client.publish('scps/server', json_object)
         return Response(status=status.HTTP_200_OK)
     
@@ -799,16 +890,126 @@ class ReportSecurityStation(APIView):
     permission_classes = [AllowAny]
     
     def post(self, request):
-        ffrom=request.data['from']
-        to=request.data['to']
+        ffrom=request.data['from'].split("-")
+        datef=datetime(int(ffrom[0]),int(ffrom[1]),int(ffrom[2]))
+        to=request.data['to'].split("-")
+        datet=datetime(int(to[0]),int(to[1]),int(to[2]))
+        l=NodeStation.objects.all()
+        s=0
+        t=0
+        data=[]
+        for i in l:
+            if i.DateTime.year==datet.year and i.DateTime.month==datet.month and i.DateTime.day==datet.day+1 :
+                break
+            if (i.DateTime.year==datef.year and i.DateTime.month==datef.month and i.DateTime.day==datef.day) or s==1:
+                s==1
+                if t==0:
+                    light=""
+                    humidity=""
+                    analog1=""
+                    analog2=""
+                    if i.light== -1 or i.light==65535:
+                        light="Null"
+                    else:
+                        light= i.light
+                    if i.humidity==255:
+                        humidity="Null"
+                    else :
+                        humidity=i.humidity
+                    if i.analog1==65535:
+                        analog1="Null"
+                    else :
+                        analog1=i.analog1
+                    if i.analog2==65535:
+                        analog2="Null"
+                    else :
+                        analog2=i.analog2
+                    bn={
+                        "Time":str(i.DateTime),
+                        "ID":str(i.id),
+                        "RoomTemp":str(i.HomeTemperature),
+                        "Humidity":humidity,
+                        "Light":light,
+                        "AnalogSensor1":analog1,
+                        "AnalogSensor2":analog2,
+                        "WorkMode":"sleep",
+                        "UserSetPoint":"20",
+                        "HVACType1":"NULL",
+                        "HVACSetPoint1":"30",
+                        "HVACTemp1":"30",
+                        "HVACState1":"1",
+                        "HVACType2":"NULL",
+                        "HVACSetPoint2":"30",
+                        "HVACTemp2":"30",
+                        "HVACState2":"1"
+                    }
+                    data.append(bn)
+                t=t+1
+                if t==10:
+                    t=0
         return Response(data=[],status=status.HTTP_200_OK)
-class ReportRoomeTem(APIView):
+class ReportRoomTem(APIView):
     permission_classes = [AllowAny]
     
     def post(self, request):
-        ffrom=request.data['from']
-        to=request.data['to']
-        return Response(data=[],status=status.HTTP_200_OK)
+        ffrom=request.data['from'].split("-")
+        datef=datetime(int(ffrom[0]),int(ffrom[1]),int(ffrom[2]))
+        to=request.data['to'].split("-")
+        datet=datetime(int(to[0]),int(to[1]),int(to[2]))
+        l=NodeStation.objects.all()
+        s=0
+        t=0
+        data=[]
+        for i in l:
+            if i.DateTime.year==datet.year and i.DateTime.month==datet.month and i.DateTime.day==datet.day+1 :
+                break
+            if (i.DateTime.year==datef.year and i.DateTime.month==datef.month and i.DateTime.day==datef.day) or s==1:
+                s==1
+                if t==0:
+                    light=""
+                    humidity=""
+                    analog1=""
+                    analog2=""
+                    if i.light== -1 or i.light == 65535:
+                        light="Null"
+                    else:
+                        light= int(i.light*100)/100
+                    if i.humidity==255:
+                        humidity="Null"
+                    else :
+                        humidity=i.humidity
+                    if i.analog1==65535:
+                        analog1="Null"
+                    else :
+                        analog1=i.analog1
+                    if i.analog2==65535:
+                        analog2="Null"
+                    else :
+                        analog2=i.analog2
+                    bn={
+                        "Time":str(i.DateTime),
+                        "ID":str(i.Node.id),
+                        "RoomTemp":str(i.HomeTemperature),
+                        "Humidity":humidity,
+                        "Light":light,
+                        "AnalogSensor1":analog1,
+                        "AnalogSensor2":analog2,
+                        "WorkMode":"sleep",
+                        "UserSetPoint":"20",
+                        "HVACType1":"NULL",
+                        "HVACSetPoint1":"30",
+                        "HVACTemp1":"30",
+                        "HVACState1":"1",
+                        "HVACType2":"NULL",
+                        "HVACSetPoint2":"30",
+                        "HVACTemp2":"30",
+                        "HVACState2":"1"
+                    }
+                    data.append(bn)
+                t=t+1
+                if t==10:
+                    t=0
+        return Response(data=data,status=status.HTTP_200_OK)
 
 class MatFiled(APIView):
     permission_classes = [AllowAny]
@@ -850,7 +1051,7 @@ class MatFiled(APIView):
 }
             json_object = json.dumps(dictsend)
             print(json_object)
-            client.connect('mqtt.giot.ir', 1883)
+            client.connect('127.0.0.1', 1883)
             client.publish('scps/server', json_object)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(request.data, status=status.HTTP_400_BAD_REQUEST)

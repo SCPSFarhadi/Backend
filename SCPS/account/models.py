@@ -150,15 +150,19 @@ class NodeStation(models.Model):
     humidity=models.FloatField(null=True,blank=True)
     valveState1=models.BooleanField(null=True,blank=True)
     valveState2=models.BooleanField(null=True,blank=True)
-    FanCoil1=models.FloatField(null=True,blank=True)
-    FanCoil2=models.FloatField(null=True,blank=True)
+    FanCoil1=models.FloatField(null=True,blank=True) 
+    FanCoil2=models.FloatField(null=True,blank=True) 
     light=models.FloatField(null=True,blank=True)
     analog1=models.FloatField(null=True,blank=True)
     analog2=models.FloatField(null=True,blank=True)
     fanState1=models.BooleanField(null=True,blank=True)
     fanState2=models.BooleanField(null=True,blank=True)
     LastTime=models.DateTimeField(null=True, blank=True)
-    
+    #HvacMode=models.CharField(max_length=500,null=True, blank=True)
+    #HvacTemp1=models.FloatField(null=True, blank=True)
+    #HvacTemp2=models.FloatField(null=True, blank=True)
+    #HvacType=models.CharField(max_length=500,null=True, blank=True)
+    #numFans=models.IntegerField(null=True, blank=True)
 class Neighbor(models.Model):
     Node1=models.ForeignKey(Node,on_delete=models.CASCADE,related_name='Neighbor1')
     Node2=models.ForeignKey(Node,on_delete=models.CASCADE)
@@ -202,3 +206,5 @@ class Floor(models.Model):
     
 class MatFile(models.Model):
     File=models.FileField(_("File"),upload_to=upload_to, null=True, blank=True)
+class switch(models.Model):
+    index=models.CharField(max_length=100,null=True,blank=True)
