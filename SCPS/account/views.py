@@ -9,18 +9,19 @@ from rest_framework.decorators import permission_classes, api_view
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.parsers import MultiPartParser,FormParser
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import CustomUser, Node, NodeStation, Neighbor, Allocation, UserNode, Security, SecurityStation, FanCoil,Floor,MatFile
+from .models import CustomUser, Node, NodeStation, Neighbor, Allocation, UserNode, Security, SecurityStation, FanCoil, \
+    Floor, MatFile
 import json
 from django.contrib.auth import get_user_model
 from django.db import models
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import paho.mqtt.client as mqtt
-from .serializers import CustomUserSerializer, LogoutSerializer,Floorserializer,MatFileserializer
+from .serializers import CustomUserSerializer, LogoutSerializer, Floorserializer, MatFileserializer
 import logging
 import threading
 import time
@@ -35,6 +36,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from datetime import datetime
 import os
+
 # from SCPS import settings
 
 User = get_user_model()
@@ -146,7 +148,7 @@ def pychart(z):
     p = 0
     for i in z["data"]:
         l = l + 1
-    #for i in z["errors"]:
+    # for i in z["errors"]:
     #    w = w + 1
     for i in Node.objects.all():
         p = p + 1
@@ -194,22 +196,23 @@ def roomTem(z):
         }
     )
 
+
 def minandmax(z):
     sum = 0
     counter = 0
     min = 10000000
     max = 0
-    np=NodeStation.objects.all()
-    xl=np.count()
-    o=0
+    np = NodeStation.objects.all()
+    xl = np.count()
+    o = 0
     for t in np:
-        o=o+1
-        if o<xl-5:
+        o = o + 1
+        if o < xl - 5:
             continue
         sum = sum + t.HomeTemperature
         counter = counter + 1
         if t.HomeTemperature > max:
-            max =t.HomeTemperature
+            max = t.HomeTemperature
             maxid = t.Node.id
         if t.HomeTemperature < min:
             min = t.HomeTemperature
@@ -237,88 +240,88 @@ def minandmax(z):
 
 def nodeNewTem(Data):
     for RecieveData in Data["data"]:
-        mode=""
-        if RecieveData["workmode"]==0:
-            mode="Sleep"
-        if RecieveData["workmode"]==1:
-            mode="EnergySaving"
-        if RecieveData["workmode"]==2:
-            mode="Maintenance"
-        if RecieveData["workmode"]==3:
-            mode="Maintenance"
-        if RecieveData["workmode"]==4:
-            mode="Classic"
-        
-        l=Node.objects.get(MacAddress=RecieveData['id']).id
-        p=Node.objects.get(MacAddress=RecieveData['id'])
-        zp=Security.objects.all()[0].Name
-        fanState1=""
-        fanState2=""
-        valveState1=""
-        valveState2=""
-        if RecieveData["fanState"][0]==1:
-            fanState1="on"
-        else :
-            fanState1="off"
-        try:
-            if RecieveData["fanState"][1]==1:
-                fanState2="on"
-            else:
-                fanState2="off"
-        except:
-            u=0
-        if RecieveData["valveState"][0]==1:
-            valveState1="on"
-        else :
-            valveState1="off"
-        try :
-            if RecieveData["valveState"][1]==1:
-                valveState2="on"
-            else :
-                valveState2="off"
-        except:
-            u=0
-        light=""
-        humidity=""
-        analog1=""
-        analog2=""
-        print(RecieveData["light"])
-        if RecieveData["light"]== -1 or RecieveData["light"]== 65535:
-            light="Null"
+        mode = ""
+        if RecieveData["workmode"] == 0:
+            mode = "Sleep"
+        if RecieveData["workmode"] == 1:
+            mode = "EnergySaving"
+        if RecieveData["workmode"] == 2:
+            mode = "Maintenance"
+        if RecieveData["workmode"] == 3:
+            mode = "Maintenance"
+        if RecieveData["workmode"] == 4:
+            mode = "Classic"
+
+        l = Node.objects.get(MacAddress=RecieveData['id']).id
+        p = Node.objects.get(MacAddress=RecieveData['id'])
+        zp = Security.objects.all()[0].Name
+        fanState1 = ""
+        fanState2 = ""
+        valveState1 = ""
+        valveState2 = ""
+        if RecieveData["fanState"][0] == 1:
+            fanState1 = "on"
         else:
-            light= str(int(RecieveData["light"]*100)/100)
-        if RecieveData["humidity"]==255:
-            humidity="Null"
-        else :
-            humidity=str(int(RecieveData["humidity"]*100)/100)
-        if RecieveData["analogSensors"][0]==65535:
-            analog1="Null"
-        else :
-            analog1=str(RecieveData["analogSensors"][0])
-        if RecieveData["analogSensors"][1]==65535:
-            analog2="Null"
-        else :
-            analog2=str(RecieveData["analogSensors"][1])
+            fanState1 = "off"
+        try:
+            if RecieveData["fanState"][1] == 1:
+                fanState2 = "on"
+            else:
+                fanState2 = "off"
+        except:
+            u = 0
+        if RecieveData["valveState"][0] == 1:
+            valveState1 = "on"
+        else:
+            valveState1 = "off"
+        try:
+            if RecieveData["valveState"][1] == 1:
+                valveState2 = "on"
+            else:
+                valveState2 = "off"
+        except:
+            u = 0
+        light = ""
+        humidity = ""
+        analog1 = ""
+        analog2 = ""
+        print(RecieveData["light"])
+        if RecieveData["light"] == -1 or RecieveData["light"] == 65535:
+            light = "Null"
+        else:
+            light = str(int(RecieveData["light"] * 100) / 100)
+        if RecieveData["humidity"] == 255:
+            humidity = "Null"
+        else:
+            humidity = str(int(RecieveData["humidity"] * 100) / 100)
+        if RecieveData["analogSensors"][0] == 65535:
+            analog1 = "Null"
+        else:
+            analog1 = str(RecieveData["analogSensors"][0])
+        if RecieveData["analogSensors"][1] == 65535:
+            analog2 = "Null"
+        else:
+            analog2 = str(RecieveData["analogSensors"][1])
         print(light)
- 
-        j=int(RecieveData["homeT"]*100)/100
-        data = {'nodeId': str(l), 'time': str(timezone.now()), 'temp':j,        
-        "lastOccupancy":str(p.LastTime),
-        "lightSensor":light,
-        "humiditySensor":humidity,
-        "analogSensor1":analog1,
-        "analogSensor2":analog2,
-        "fanAir1":fanState1,
-        "fanAir2":fanState2,
-        "hvac1":valveState1,
-        "hvac2":valveState2,
-        "parameter":RecieveData["numFans"],
-        "mode":mode,
-        "setPoint":RecieveData["setT"],
-        "fanAir1Temp":str(int(RecieveData["fancoilT"][0]*100)/100)
-        }
+
+        j = int(RecieveData["homeT"] * 100) / 100
+        data = {'nodeId': str(l), 'time': str(timezone.now()), 'temp': j,
+                "lastOccupancy": str(p.LastTime),
+                "lightSensor": light,
+                "humiditySensor": humidity,
+                "analogSensor1": analog1,
+                "analogSensor2": analog2,
+                "fanAir1": fanState1,
+                "fanAir2": fanState2,
+                "hvac1": valveState1,
+                "hvac2": valveState2,
+                "parameter": RecieveData["numFans"],
+                "mode": mode,
+                "setPoint": RecieveData["setT"],
+                "fanAir1Temp": str(int(RecieveData["fancoilT"][0] * 100) / 100)
+                }
     channel_layer = get_channel_layer()
-    if zp==str(l):
+    if zp == str(l):
         async_to_sync(channel_layer.group_send)(
             'chat_test',  # group _ name
             {
@@ -326,25 +329,25 @@ def nodeNewTem(Data):
                 'message': data
             }
         )
-    np=NodeStation.objects.all()
-    xl=np.count()
-    o=0
-    xk=Node.objects.all().count()
-    data=[]
+    np = NodeStation.objects.all()
+    xl = np.count()
+    o = 0
+    xk = Node.objects.all().count()
+    data = []
     for RecieveData in np:
-        o=o+1
-        if o<xl-xk+1:
+        o = o + 1
+        if o < xl - xk + 1:
             continue
         print("jkdfls")
-        if RecieveData.HomeTemperature+2<RecieveData.SetPointTemperature:
+        if RecieveData.HomeTemperature + 2 < RecieveData.SetPointTemperature:
             data.append([str(RecieveData.Node.id), "#0000ff"])
-            #data = [[str(l), "#0000ff"],["0", "#ffc0cb"]]
-        elif RecieveData.HomeTemperature+2<RecieveData.SetPointTemperature :
+            # data = [[str(l), "#0000ff"],["0", "#ffc0cb"]]
+        elif RecieveData.HomeTemperature + 2 < RecieveData.SetPointTemperature:
             data.append([str(RecieveData.Node.id), "#ff0000"])
-            #data = [[str(l), "#ff0000"],["0", "#ffc0cb"]]
-        else:  
+            # data = [[str(l), "#ff0000"],["0", "#ffc0cb"]]
+        else:
             data.append([str(RecieveData.Node.id), "#00ff00"])
-            #data = [[str(l), "#00ff00"],["0", "#ffc0cb"]]
+            # data = [[str(l), "#00ff00"],["0", "#ffc0cb"]]
     data.append(["0", "#ffc0cb"])
     async_to_sync(channel_layer.group_send)(
         'chat_test',  # group _ name
@@ -375,11 +378,11 @@ def ReciveMqtt1(z):
             h.Node2 = node2
             h.RSSI = rssi
             h.save()
-            #o = t["nums"]
-            #u = 0
-            #if Node.objects.filter(MacAddress=nodeid1).count() > o:
+            # o = t["nums"]
+            # u = 0
+            # if Node.objects.filter(MacAddress=nodeid1).count() > o:
             #    o = Node.objects.filter(MacAddress=nodeid1).count() - o
-            #while u < o:
+            # while u < o:
             #    l = FanCoil()
             #    l.Node = Node.objects.get(MacAddress=nodeid1)
             #    u = u + 1
@@ -390,75 +393,75 @@ def ReciveMqtt1(z):
 
 def ReciveMqtt2(Data):
     timeZone = timezone.now()
-    dateTimeNow=datetime(timeZone.year, timeZone.month, timeZone.day, timeZone.hour, timeZone.minute, timeZone.second,0)
+    dateTimeNow = datetime(timeZone.year, timeZone.month, timeZone.day, timeZone.hour, timeZone.minute, timeZone.second,
+                           0)
 
     print(Data)
     for recieveData in Data["data"]:
         nodes = NodeStation()
         nodeid = recieveData["id"]
-        
+
         try:
             node = Node.objects.get(MacAddress=nodeid)
-        except :
-            node=Node()
-            node.MacAddress=recieveData["id"]
+        except:
+            node = Node()
+            node.MacAddress = recieveData["id"]
             node.save()
-            
+
         nodes.Node = node
         s = 0
         l = 0
-        
+
         # check number of parameter sent by the gateway 
-        if( len(recieveData["fancoilT"]) != 2 ):
+        if (len(recieveData["fancoilT"]) != 2):
             if len(recieveData["fancoilT"]) == 1:
                 recieveData['fancoilT'].append(0)
-            else: # means if 0
-                recieveData['fancoilT'] = [0,0]
-                
-        if( len(recieveData["fanState"]) != 2 ):
+            else:  # means if 0
+                recieveData['fancoilT'] = [0, 0]
+
+        if (len(recieveData["fanState"]) != 2):
             if len(recieveData["fanState"]) == 1:
                 recieveData['fanState'].append(0)
-            else: # means if 0
-                recieveData['fanState'] = [0,0]
-        
-        nodes.FanCoilTemperature = int(((recieveData["fancoilT"][0]+recieveData["fancoilT"][0])/2)*100)/100
-        nodes.HomeTemperature = int(recieveData["homeT"]*100)/100
+            else:  # means if 0
+                recieveData['fanState'] = [0, 0]
+
+        nodes.FanCoilTemperature = int(((recieveData["fancoilT"][0] + recieveData["fancoilT"][0]) / 2) * 100) / 100
+        nodes.HomeTemperature = int(recieveData["homeT"] * 100) / 100
         nodes.Presence = recieveData["present"]
-        nodes.FanCoil1=int(recieveData["fancoilT"][0]*100)/100
-        
-        nodes.FanCoil2=int(recieveData["fancoilT"][1]*100)/100
-        
-        nodes.humidity=recieveData["humidity"]
-        nodes.valveState1=recieveData["valveState"][0]
-        #nodes.valveState2=t["valveState"][1]
-        nodes.analog1=recieveData["analogSensors"][0]
-        nodes.analog2=recieveData["analogSensors"][1]
-        nodes.light=int(recieveData["light"]*100)/100
-        
+        nodes.FanCoil1 = int(recieveData["fancoilT"][0] * 100) / 100
+
+        nodes.FanCoil2 = int(recieveData["fancoilT"][1] * 100) / 100
+
+        nodes.humidity = recieveData["humidity"]
+        nodes.valveState1 = recieveData["valveState"][0]
+        # nodes.valveState2=t["valveState"][1]
+        nodes.analog1 = recieveData["analogSensors"][0]
+        nodes.analog2 = recieveData["analogSensors"][1]
+        nodes.light = int(recieveData["light"] * 100) / 100
+
         if recieveData["present"] < 5:
-            nodes.LastTime=dateTimeNow
-            node.LastTime=dateTimeNow
-        else :
-            nodes.LastTime=node.LastTime
-            
-        if (recieveData["fanState"][0]) and recieveData["fanState"][0]==1:
-            nodes.fanState1=True
-        else :
-            nodes.fanState1=False
-        #if t["fanState"][1]==1:
+            nodes.LastTime = dateTimeNow
+            node.LastTime = dateTimeNow
+        else:
+            nodes.LastTime = node.LastTime
+
+        if (recieveData["fanState"][0]) and recieveData["fanState"][0] == 1:
+            nodes.fanState1 = True
+        else:
+            nodes.fanState1 = False
+        # if t["fanState"][1]==1:
         #    nodes.fanState2=True
-        #else :
+        # else :
         #    nodes.fanState2=False
-        if recieveData["valveState"][0]==1:
-            nodes.valveState1=True
-        else :
-            nodes.valveState1=False
-        #if t["valveState"][1]==1:
+        if recieveData["valveState"][0] == 1:
+            nodes.valveState1 = True
+        else:
+            nodes.valveState1 = False
+        # if t["valveState"][1]==1:
         #    nodes.valveState2=True
-        #else :
+        # else :
         #    nodes.valveState2=False
-        
-        
+
         # nodes.faucetState=t["faucetState"]
         nodes.SetPointTemperature = recieveData["setT"]
         nodes.DateTime = dateTimeNow
@@ -564,13 +567,14 @@ class LogoutAPIView(generics.GenericAPIView):
 
 class sendLastData(APIView):
     permission_classes = [AllowAny]
+
     def get(self, request):
         l = NodeStation.objects.all().order_by("DateTime")
         sum = 0
         d = datetime.now()
         counter = 1
         en = 0
-        p=[]
+        p = []
         for i in l:
             if d == i.DateTime:
                 sum = sum + i.HomeTemperature
@@ -585,13 +589,13 @@ class sendLastData(APIView):
                     en = 1
                     continue
                 Avg = sum / counter
-                l={'date': str(d), 'tem': int(int(Avg*100)/100)}
+                l = {'date': str(d), 'tem': int(int(Avg * 100) / 100)}
                 p.append(l)
                 channel_layer = get_channel_layer()
                 d = i.DateTime
                 counter = 1
                 sum = i.HomeTemperature
-        data=p 
+        data = p
         async_to_sync(channel_layer.group_send)(
             'chat_test',  # group _ name
             {
@@ -603,21 +607,21 @@ class sendLastData(APIView):
 
     def post(self, request):
         NodeArray = Node.objects.all()
-        #print(str(NodeArray))
+        # print(str(NodeArray))
         for i in NodeArray:
-            #print(request.data["nodeid"])
+            # print(request.data["nodeid"])
             if str(i.id) == str(request.data["nodeid"]):
-                l=Security.objects.all()[0]
-                l.Name=str(i.id)
+                l = Security.objects.all()[0]
+                l.Name = str(i.id)
                 l.save()
                 NodeStationArray = NodeStation.objects.filter(Node=i)
-                g=NodeStationArray.count()
+                g = NodeStationArray.count()
                 print(g)
                 times = []
                 temps = []
-                #print(request.data["nodeid"])
+                # print(request.data["nodeid"])
                 for z in NodeStationArray:
-                    if(z.id>g-500):
+                    if (z.id > g - 500):
                         times.append(str(z.DateTime))
                         temps.append(str(z.HomeTemperature))
                 data = {'nodeid': str(i.id), 'times': times, 'temps': temps}
@@ -631,93 +635,94 @@ class SetConfigNode(APIView):
         a = 0
         b = 0
         c = -1
-        #valve_cammand = []
+        # valve_cammand = []
         print(request.data)
         dictsend = {}
-        #MyNode = Node.objects.get(MacAddress=request.data["nodeid"])
-        #MyNode.SetPointTemperature = request.data["temp"]
+        # MyNode = Node.objects.get(MacAddress=request.data["nodeid"])
+        # MyNode.SetPointTemperature = request.data["temp"]
         if request.data["perm"] == "YES":
-            #MyNode.ControlStatus = True
+            # MyNode.ControlStatus = True
             b = 1
         elif request.data["perm"] == "NO":
-            #MyNode.ControlStatus = False
+            # MyNode.ControlStatus = False
             b = 0
         if request.data["sleepMode"] == True:
-            #MyNode.mode = "sleepMode"
-            #MyNode.status = False
+            # MyNode.mode = "sleepMode"
+            # MyNode.status = False
             c = 0
             a = 0
         if request.data["energysavingMode"] == True:
-            #MyNode.mode = "optimalMode"
+            # MyNode.mode = "optimalMode"
             c = 1
         if request.data["manualMode"] == True:
-            #MyNode.mode = "manualMode"
+            # MyNode.mode = "manualMode"
             c = 2
         if request.data["classicMode"] == True:
-            #MyNode.mode = "manualMode"
+            # MyNode.mode = "manualMode"
             c = 4
-        
-    #    NodeArray = Node.objects.all()
-    #    print(str(NodeArray))
-    #    for i in NodeArray:
-    #        if i.MacAddress == request.data["nodeid"]:
-    #            NodeStationArray = FanCoil.objects.filter(Node=i)
-    #            o = 1
-    #            for z in NodeStationArray:
-    #                if o > 3:
-    #                    o = 3
-    #                valve_cammand.append(request.data["cValve" + str(o)])
-    #                z.valv = request.data["cValve" + str(o)]
-    #                o = o + 1
-    #                z.save()
-    #    MyNode.save()
-        valve_cammand=[]
-        fan_command=[]
-        if request.data["cValve1"]==True:
+
+        #    NodeArray = Node.objects.all()
+        #    print(str(NodeArray))
+        #    for i in NodeArray:
+        #        if i.MacAddress == request.data["nodeid"]:
+        #            NodeStationArray = FanCoil.objects.filter(Node=i)
+        #            o = 1
+        #            for z in NodeStationArray:
+        #                if o > 3:
+        #                    o = 3
+        #                valve_cammand.append(request.data["cValve" + str(o)])
+        #                z.valv = request.data["cValve" + str(o)]
+        #                o = o + 1
+        #                z.save()
+        #    MyNode.save()
+        valve_cammand = []
+        fan_command = []
+        if request.data["cValve1"] == True:
             valve_cammand.append(1)
         else:
             valve_cammand.append(0)
-    
-        if request.data["cValve2"]==True:
+
+        if request.data["cValve2"] == True:
             valve_cammand.append(1)
         else:
             valve_cammand.append(0)
-        if request.data["fanAir1"]==True:
+        if request.data["fanAir1"] == True:
             fan_command.append(1)
         else:
             fan_command.append(0)
-    
-        if request.data["fanAir2"]==True :
+
+        if request.data["fanAir2"] == True:
             fan_command.append(1)
         else:
             fan_command.append(0)
-        z=fan_command
-        try :
-            if request.data["fanspeed"]=='low':
+        z = fan_command
+        try:
+            if request.data["fanspeed"] == 'low':
                 fan_command.clear()
                 fan_command.append(0)
                 fan_command.append(0)
-            if request.data["fanspeed"]=='medium':
+            if request.data["fanspeed"] == 'medium':
                 fan_command.clear()
                 fan_command.append(1)
                 fan_command.append(0)
-            if request.data["fanspeed"]=='high':
+            if request.data["fanspeed"] == 'high':
                 fan_command.clear()
                 fan_command.append(0)
                 fan_command.append(1)
         except:
             pass
-            
+
         print(request.data)
         client = mqtt.Client()
-        z=Node.objects.filter(id=int(request.data["nodeid"]))[0].MacAddress
+        z = Node.objects.filter(id=int(request.data["nodeid"]))[0].MacAddress
         dictsend = {
             "type": "33",
             "time": "568595",
             "conf": [
                 {
-                    "id":z ,
-                    "setT": [int(request.data["temp"]),int(request.data["dongleValue1"]),int(request.data["dongleValue2"]),255],
+                    "id": z,
+                    "setT": [int(request.data["temp"]), int(request.data["dongleValue1"]),
+                             int(request.data["dongleValue2"]), 255],
                     "valve_command": valve_cammand,
                     "workmode": c,
                     "permission": b,
@@ -736,6 +741,7 @@ class SetConfigNode(APIView):
 
 class MqttRunCommand(APIView):
     permission_classes = [AllowAny]
+
     def get(self, request):
         x = threading.Thread(target=MqttRun)
         x.start()
@@ -743,7 +749,8 @@ class MqttRunCommand(APIView):
 
 
 class graphNodes(APIView):
-    permission_classes=[AllowAny]
+    permission_classes = [AllowAny]
+
     def get(self, request):
         nodes = []
         links = []
@@ -752,7 +759,7 @@ class graphNodes(APIView):
                 'id': str(t.id)
             }
             nodes.append(p)
-        o={
+        o = {
             'id': '0'
         }
         nodes.append(o)
@@ -761,7 +768,7 @@ class graphNodes(APIView):
         #            'source': str(n.Node1.id),
         #            'target': str(n.Node2.id)
         #        }
-                #links.append(o)
+        # links.append(o)
         data = {'graph': nodes, 'links': links}
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
@@ -773,43 +780,44 @@ class graphNodes(APIView):
         )
         return Response(status=status.HTTP_200_OK)
 
+
 class controlPanel(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
         print(request.data)
-        hvacmode=request.data['hvacmode']
-        selectmode=request.data['selectmode']
-        fan=request.data['fan']
-        m=0
-        setpoint=""
-        if selectmode=='sleep':
-            setpoint=20
-            m=0
+        hvacmode = request.data['hvacmode']
+        selectmode = request.data['selectmode']
+        fan = request.data['fan']
+        m = 0
+        setpoint = ""
+        if selectmode == 'sleep':
+            setpoint = 20
+            m = 0
         else:
-            setpoint=int(request.data['setpoint'])
-        if selectmode=='classic':
-            m=4
-        if selectmode=='energysaving':
-            m=1
-        if selectmode=='maintenance':
-            m=2
-        if hvacmode=="cooling":
-            h=1
+            setpoint = int(request.data['setpoint'])
+        if selectmode == 'classic':
+            m = 4
+        if selectmode == 'energysaving':
+            m = 1
+        if selectmode == 'maintenance':
+            m = 2
+        if hvacmode == "cooling":
+            h = 1
         else:
-            h=0
+            h = 0
         dictsend = {
             "type": "33",
             "time": "568595",
             "conf": [
                 {
-                    "id":"ff:ff:ff:ff:ff:ff" ,
-                    "setT": [setpoint,255,255,255],
-                    "valve_command": [1,1],
+                    "id": "ff:ff:ff:ff:ff:ff",
+                    "setT": [setpoint, 255, 255, 255],
+                    "valve_command": [1, 1],
                     "workmode": m,
                     "permission": "1",
                     "hvac": h,
-                    "fan_command": [1,1],
+                    "fan_command": [1, 1],
                 }
             ],
             "equ": {}
@@ -819,251 +827,271 @@ class controlPanel(APIView):
         client.connect('127.0.0.1', 1883)
         client.publish('scps/server/1', json_object)
         return Response(status=status.HTTP_200_OK)
-    
+
 
 class Floor(APIView):
     permission_classes = [AllowAny]
-    def post(self,request,format=None):
-        parser_classes=[MultiPartParser, FormParser]
-        serializer=Floorserializer(data=request.data)
+
+    def post(self, request, format=None):
+        parser_classes = [MultiPartParser, FormParser]
+        serializer = Floorserializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
-    def get(self,request,format=None):
-        f=Floor.objects.all()
-        serializer=Floorserializer(data=f,many=True)
-        return Response(serializer.data,status.HTTP_200_OK)
+
+    def get(self, request, format=None):
+        f = Floor.objects.all()
+        serializer = Floorserializer(data=f, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
 
 class weather(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        a=request.data["longitude"]
-        b=request.data["latitude"]
-        x = requests.get('https://one-api.ir/weather/?token={62cdc2455c46c6.60515960}&action=currentbylocation&lat={' + b + '}&lon={' + a + '}')
+        city_name = request.data["city_name"]
+        url = 'http://api.openweathermap.org/data/2.5/weather?q={}&appid=60d02a8e8559a6937eb7f31c672e18ba&units=metric'.format(
+            city_name)
+        res = requests.get(url)
+        data = res.json()
+        print(data)
+        b = data['coord']['lat']
+        a = data['coord']['lon']
+        # b = request.data["latitude"]
+
+        x = requests.get(
+            'https://one-api.ir/weather/?token={62cdc2455c46c6.60515960}&action=currentbylocation&lat={' + b + '}&lon={' + a + '}')
         print(x.text)
         dictsend = {
-        "type": "34",
-        "time": "155631654",
-        "conf": {
+            "type": "34",
+            "time": "155631654",
+            "conf": {
 
-                "out_temp":36.58,
-                "engine_temp":25,
-                "other_temp":25,
+                "out_temp": 36.58,
+                "engine_temp": 25,
+                "other_temp": 25,
+            }
+
         }
-
-
-}
         json_object = json.dumps(dictsend)
         print(json_object)
         client.connect('127.0.0.1', 1883)
         client.publish('scps/server', json_object)
         return Response(status=status.HTTP_200_OK)
-    
+
+
 class ReportNodeStation(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        ffrom=request.data['from'].split("-")
-        datef=datetime(int(ffrom[0]),int(ffrom[1]),int(ffrom[2]))
-        to=request.data['to'].split("-")
-        datet=datetime(int(to[0]),int(to[1]),int(to[2]))
-        node=request.data['nodeid']
-        MyNode=Node.objects.get(id=int(node))
-        l=NodeStation.objects.filter(Node=MyNode)
-        s=0
-        t=0
+        ffrom = request.data['from'].split("-")
+        datef = datetime(int(ffrom[0]), int(ffrom[1]), int(ffrom[2]))
+        to = request.data['to'].split("-")
+        datet = datetime(int(to[0]), int(to[1]), int(to[2]))
+        node = request.data['nodeid']
+        MyNode = Node.objects.get(id=int(node))
+        l = NodeStation.objects.filter(Node=MyNode)
+        s = 0
+        t = 0
         times = []
         temps = []
         for i in l:
-            if i.DateTime.year==datet.year and i.DateTime.month==datet.month and i.DateTime.day==datet.day+1 :
+            if i.DateTime.year == datet.year and i.DateTime.month == datet.month and i.DateTime.day == datet.day + 1:
                 break
-            if (i.DateTime.year==datef.year and i.DateTime.month==datef.month and i.DateTime.day==datef.day) or s==1:
-                s==1
-                if t==0:
+            if (
+                    i.DateTime.year == datef.year and i.DateTime.month == datef.month and i.DateTime.day == datef.day) or s == 1:
+                s == 1
+                if t == 0:
                     times.append(str(i.DateTime))
                     temps.append(str(i.HomeTemperature))
-                t=t+1
-                if t==10:
-                    t=0
-                
+                t = t + 1
+                if t == 10:
+                    t = 0
+
         data = {'nodeid': str(MyNode.id), 'times': times, 'temps': temps}
-            
-        
-        #z=l.filter(HomeTemperature>datef and HomeTemperature<datet)
-        return Response(data=data,status=status.HTTP_200_OK)
-    
+
+        # z=l.filter(HomeTemperature>datef and HomeTemperature<datet)
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
 class ReportSecurityStation(APIView):
     permission_classes = [AllowAny]
-    
+
     def post(self, request):
-        ffrom=request.data['from'].split("-")
-        datef=datetime(int(ffrom[0]),int(ffrom[1]),int(ffrom[2]))
-        to=request.data['to'].split("-")
-        datet=datetime(int(to[0]),int(to[1]),int(to[2]))
-        l=NodeStation.objects.all()
-        s=0
-        t=0
-        data=[]
+        ffrom = request.data['from'].split("-")
+        datef = datetime(int(ffrom[0]), int(ffrom[1]), int(ffrom[2]))
+        to = request.data['to'].split("-")
+        datet = datetime(int(to[0]), int(to[1]), int(to[2]))
+        l = NodeStation.objects.all()
+        s = 0
+        t = 0
+        data = []
         for i in l:
-            if i.DateTime.year==datet.year and i.DateTime.month==datet.month and i.DateTime.day==datet.day+1 :
+            if i.DateTime.year == datet.year and i.DateTime.month == datet.month and i.DateTime.day == datet.day + 1:
                 break
-            if (i.DateTime.year==datef.year and i.DateTime.month==datef.month and i.DateTime.day==datef.day) or s==1:
-                s==1
-                if t==0:
-                    light=""
-                    humidity=""
-                    analog1=""
-                    analog2=""
-                    if i.light== -1 or i.light==65535:
-                        light="Null"
+            if (
+                    i.DateTime.year == datef.year and i.DateTime.month == datef.month and i.DateTime.day == datef.day) or s == 1:
+                s == 1
+                if t == 0:
+                    light = ""
+                    humidity = ""
+                    analog1 = ""
+                    analog2 = ""
+                    if i.light == -1 or i.light == 65535:
+                        light = "Null"
                     else:
-                        light= i.light
-                    if i.humidity==255:
-                        humidity="Null"
-                    else :
-                        humidity=i.humidity
-                    if i.analog1==65535:
-                        analog1="Null"
-                    else :
-                        analog1=i.analog1
-                    if i.analog2==65535:
-                        analog2="Null"
-                    else :
-                        analog2=i.analog2
-                    bn={
-                        "Time":str(i.DateTime),
-                        "ID":str(i.id),
-                        "RoomTemp":str(i.HomeTemperature),
-                        "Humidity":humidity,
-                        "Light":light,
-                        "AnalogSensor1":analog1,
-                        "AnalogSensor2":analog2,
-                        "WorkMode":"sleep",
-                        "UserSetPoint":"20",
-                        "HVACType1":"NULL",
-                        "HVACSetPoint1":"30",
-                        "HVACTemp1":"30",
-                        "HVACState1":"1",
-                        "HVACType2":"NULL",
-                        "HVACSetPoint2":"30",
-                        "HVACTemp2":"30",
-                        "HVACState2":"1"
+                        light = i.light
+                    if i.humidity == 255:
+                        humidity = "Null"
+                    else:
+                        humidity = i.humidity
+                    if i.analog1 == 65535:
+                        analog1 = "Null"
+                    else:
+                        analog1 = i.analog1
+                    if i.analog2 == 65535:
+                        analog2 = "Null"
+                    else:
+                        analog2 = i.analog2
+                    bn = {
+                        "Time": str(i.DateTime),
+                        "ID": str(i.id),
+                        "RoomTemp": str(i.HomeTemperature),
+                        "Humidity": humidity,
+                        "Light": light,
+                        "AnalogSensor1": analog1,
+                        "AnalogSensor2": analog2,
+                        "WorkMode": "sleep",
+                        "UserSetPoint": "20",
+                        "HVACType1": "NULL",
+                        "HVACSetPoint1": "30",
+                        "HVACTemp1": "30",
+                        "HVACState1": "1",
+                        "HVACType2": "NULL",
+                        "HVACSetPoint2": "30",
+                        "HVACTemp2": "30",
+                        "HVACState2": "1"
                     }
                     data.append(bn)
-                t=t+1
-                if t==10:
-                    t=0
-        return Response(data=[],status=status.HTTP_200_OK)
+                t = t + 1
+                if t == 10:
+                    t = 0
+        return Response(data=[], status=status.HTTP_200_OK)
+
+
 class ReportRoomTem(APIView):
     permission_classes = [AllowAny]
-    
+
     def post(self, request):
-        ffrom=request.data['from'].split("-")
-        datef=datetime(int(ffrom[0]),int(ffrom[1]),int(ffrom[2]))
-        to=request.data['to'].split("-")
-        datet=datetime(int(to[0]),int(to[1]),int(to[2]))
-        l=NodeStation.objects.all()
-        s=0
-        t=0
-        data=[]
+        ffrom = request.data['from'].split("-")
+        datef = datetime(int(ffrom[0]), int(ffrom[1]), int(ffrom[2]))
+        to = request.data['to'].split("-")
+        datet = datetime(int(to[0]), int(to[1]), int(to[2]))
+        l = NodeStation.objects.all()
+        s = 0
+        t = 0
+        data = []
         for i in l:
-            if i.DateTime.year==datet.year and i.DateTime.month==datet.month and i.DateTime.day==datet.day+1 :
+            if i.DateTime.year == datet.year and i.DateTime.month == datet.month and i.DateTime.day == datet.day + 1:
                 break
-            if (i.DateTime.year==datef.year and i.DateTime.month==datef.month and i.DateTime.day==datef.day) or s==1:
-                s==1
-                if t==0:
-                    light=""
-                    humidity=""
-                    analog1=""
-                    analog2=""
-                    if i.light== -1 or i.light == 65535:
-                        light="Null"
+            if (
+                    i.DateTime.year == datef.year and i.DateTime.month == datef.month and i.DateTime.day == datef.day) or s == 1:
+                s == 1
+                if t == 0:
+                    light = ""
+                    humidity = ""
+                    analog1 = ""
+                    analog2 = ""
+                    if i.light == -1 or i.light == 65535:
+                        light = "Null"
                     else:
-                        light= int(i.light*100)/100
-                    if i.humidity==255:
-                        humidity="Null"
-                    else :
-                        humidity=i.humidity
-                    if i.analog1==65535:
-                        analog1="Null"
-                    else :
-                        analog1=i.analog1
-                    if i.analog2==65535:
-                        analog2="Null"
-                    else :
-                        analog2=i.analog2
-                    bn={
-                        "Time":str(i.DateTime),
-                        "ID":str(i.Node.id),
-                        "RoomTemp":str(i.HomeTemperature),
-                        "Humidity":humidity,
-                        "Light":light,
-                        "AnalogSensor1":analog1,
-                        "AnalogSensor2":analog2,
-                        "WorkMode":"sleep",
-                        "UserSetPoint":"20",
-                        "HVACType1":"NULL",
-                        "HVACSetPoint1":"30",
-                        "HVACTemp1":"30",
-                        "HVACState1":"1",
-                        "HVACType2":"NULL",
-                        "HVACSetPoint2":"30",
-                        "HVACTemp2":"30",
-                        "HVACState2":"1"
+                        light = int(i.light * 100) / 100
+                    if i.humidity == 255:
+                        humidity = "Null"
+                    else:
+                        humidity = i.humidity
+                    if i.analog1 == 65535:
+                        analog1 = "Null"
+                    else:
+                        analog1 = i.analog1
+                    if i.analog2 == 65535:
+                        analog2 = "Null"
+                    else:
+                        analog2 = i.analog2
+                    bn = {
+                        "Time": str(i.DateTime),
+                        "ID": str(i.Node.id),
+                        "RoomTemp": str(i.HomeTemperature),
+                        "Humidity": humidity,
+                        "Light": light,
+                        "AnalogSensor1": analog1,
+                        "AnalogSensor2": analog2,
+                        "WorkMode": "sleep",
+                        "UserSetPoint": "20",
+                        "HVACType1": "NULL",
+                        "HVACSetPoint1": "30",
+                        "HVACTemp1": "30",
+                        "HVACState1": "1",
+                        "HVACType2": "NULL",
+                        "HVACSetPoint2": "30",
+                        "HVACTemp2": "30",
+                        "HVACState2": "1"
                     }
                     data.append(bn)
-                t=t+1
-                if t==10:
-                    t=0
-        return Response(data=data,status=status.HTTP_200_OK)
+                t = t + 1
+                if t == 10:
+                    t = 0
+        return Response(data=data, status=status.HTTP_200_OK)
+
 
 class MatFiled(APIView):
     permission_classes = [AllowAny]
-    def post(self,request,format=None):
-        parser_classes=[MultiPartParser, FormParser]
-        serializer=MatFileserializer(data=request.data)
+
+    def post(self, request, format=None):
+        parser_classes = [MultiPartParser, FormParser]
+        serializer = MatFileserializer(data=request.data)
         if serializer.is_valid():
             print("1111111111111111111111111111111111111111111111111111111")
             serializer.save()
             print("22222222222222222222222222222222")
-            f=MatFile.objects.all()
-            a="http://37.156.25.234:8000/"+str(f[0].File)
+            f = MatFile.objects.all()
+            a = "http://37.156.25.234:8000/" + str(f[0].File)
             print(a)
             dictsend = {
-    "type": "11",
-    "time": "server timestamp",
-    "clusters": [
-        {
-            "CHId": "<device mac address>",
-            "channel": "5"
-        }
-    ],
-    "equ": {"url":a},
-    "conf": [
-        {
-            "id": "<device mac address>",
-            "setT": [25,255,255,255], 
-            "permission": 0, 
-            "workmode" : 1, 
-            "hvac":0, 
-            "fan_command": [],
-            "Valve_command":[], 
-            "out_temp":40,
-            "engine_temp":35,
-             "other_temp":27,
+                "type": "11",
+                "time": "server timestamp",
+                "clusters": [
+                    {
+                        "CHId": "<device mac address>",
+                        "channel": "5"
+                    }
+                ],
+                "equ": {"url": a},
+                "conf": [
+                    {
+                        "id": "<device mac address>",
+                        "setT": [25, 255, 255, 255],
+                        "permission": 0,
+                        "workmode": 1,
+                        "hvac": 0,
+                        "fan_command": [],
+                        "Valve_command": [],
+                        "out_temp": 40,
+                        "engine_temp": 35,
+                        "other_temp": 27,
 
-        }
-    ]
-}
+                    }
+                ]
+            }
             json_object = json.dumps(dictsend)
             print(json_object)
             client.connect('127.0.0.1', 1883)
             client.publish('scps/server', json_object)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
-    def get(self,request,format=None):
-        f=MatFile.objects.all()
-        serializer=MatFileserializer(data=f,many=True)
-        return Response(serializer.data,status.HTTP_200_OK)
+
+    def get(self, request, format=None):
+        f = MatFile.objects.all()
+        serializer = MatFileserializer(data=f, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
