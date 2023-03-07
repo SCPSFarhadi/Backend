@@ -855,30 +855,20 @@ class weather(APIView):
             city_name)
         res = requests.get(url)
         data = res.json()
-        print(data)
-        b = data['coord']['lat']
-        a = data['coord']['lon']
-        # b = request.data["latitude"]
-
-        x = requests.get(
-            'https://one-api.ir/weather/?token={62cdc2455c46c6.60515960}&action=currentbylocation&lat={' + b + '}&lon={' + a + '}')
-        print(x.text)
         dictsend = {
             "type": "34",
             "time": "155631654",
             "conf": {
-
                 "out_temp": 36.58,
                 "engine_temp": 25,
                 "other_temp": 25,
             }
-
         }
         json_object = json.dumps(dictsend)
         print(json_object)
         client.connect('127.0.0.1', 1883)
-        client.publish('scps/server', json_object)
-        return Response(status=status.HTTP_200_OK)
+        client.publish('scps/server', data)
+        return Response(data=data, status=status.HTTP_200_OK)
 
 
 class ReportNodeStation(APIView):
