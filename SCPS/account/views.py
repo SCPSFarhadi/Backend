@@ -855,20 +855,9 @@ class weather(APIView):
             city_name)
         res = requests.get(url)
         data = res.json()
-        dictsend = {
-            "type": "34",
-            "time": "155631654",
-            "conf": {
-                "out_temp": 36.58,
-                "engine_temp": 25,
-                "other_temp": 25,
-            }
-        }
-        json_object = json.dumps(dictsend)
+        json_object = json.dumps(data)
         print(json_object)
-        client.connect('127.0.0.1', 1883)
-        client.publish('scps/server', data)
-        return Response(data=data, status=status.HTTP_200_OK)
+        return Response(data=json_object, status=status.HTTP_200_OK)
 
 
 class ReportNodeStation(APIView):
