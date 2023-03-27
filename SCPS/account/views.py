@@ -677,25 +677,29 @@ class SetConfigNode(APIView):
         #    MyNode.save()
         valve_cammand = []
         fan_command = []
-        if request.data["cValve1"] == True:
-            valve_cammand.append(1)
-        else:
-            valve_cammand.append(0)
+        valve_cammand.append(float('inf') if request.data['cvalve1'] else request.data['cvalve1'])
+        valve_cammand.append(float('inf') if request.data['cvalve2'] else request.data['cvalve2'])
+        fan_command.append(float('inf') if request.data['fanAir1'] else request.data['fanAir1'])
+        fan_command.append(float('inf') if request.data['fanAir2'] else request.data['fanAir2'])
 
-        if request.data["cValve2"] == True:
-            valve_cammand.append(1)
-        else:
-            valve_cammand.append(0)
-        if request.data["fanAir1"] == True:
-            fan_command.append(1)
-        else:
-            fan_command.append(0)
-
-        if request.data["fanAir2"] == True:
-            fan_command.append(1)
-        else:
-            fan_command.append(0)
-        z = fan_command
+        # if request.data["cValve1"] == True:
+        #     valve_cammand.append(1)
+        # else:
+        #     valve_cammand.append(0)
+        # if request.data["cValve2"] == True:
+        #     valve_cammand.append(1)
+        # else:
+        #     valve_cammand.append(0)
+        # if request.data["fanAir1"] == True:
+        #     fan_command.append(1)
+        # else:
+        #     fan_command.append(0)
+        #
+        # if request.data["fanAir2"] == True:
+        #     fan_command.append(1)
+        # else:
+        #     fan_command.append(0)
+        # z = fan_command
         try:
             if request.data["fanspeed"] == 'low':
                 fan_command.clear()
