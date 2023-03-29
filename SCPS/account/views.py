@@ -631,7 +631,7 @@ class sendLastData(APIView):
 class SetConfigNode(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request):
+    def change_valves(self, request):
         a = 0
         b = 0
         c = -1
@@ -677,29 +677,29 @@ class SetConfigNode(APIView):
         #    MyNode.save()
         valve_cammand = []
         fan_command = []
-        valve_cammand.append(float('inf') if request.data['cvalve1'] else request.data['cvalve1'])
-        valve_cammand.append(float('inf') if request.data['cvalve2'] else request.data['cvalve2'])
-        fan_command.append(float('inf') if request.data['fanAir1'] else request.data['fanAir1'])
-        fan_command.append(float('inf') if request.data['fanAir2'] else request.data['fanAir2'])
-
-        # if request.data["cValve1"] == True:
-        #     valve_cammand.append(1)
-        # else:
-        #     valve_cammand.append(0)
-        # if request.data["cValve2"] == True:
-        #     valve_cammand.append(1)
-        # else:
-        #     valve_cammand.append(0)
-        # if request.data["fanAir1"] == True:
-        #     fan_command.append(1)
-        # else:
-        #     fan_command.append(0)
+        # valve_cammand.append(float('inf') if request.data['cvalve1'] else request.data['cvalve1'])
+        # valve_cammand.append(float('inf') if request.data['cvalve2'] else request.data['cvalve2'])
+        # fan_command.append(float('inf') if request.data['fanAir1'] else request.data['fanAir1'])
+        # fan_command.append(float('inf') if request.data['fanAir2'] else request.data['fanAir2'])
         #
-        # if request.data["fanAir2"] == True:
-        #     fan_command.append(1)
-        # else:
-        #     fan_command.append(0)
-        # z = fan_command
+        if request.data["cValve1"] == True:
+            valve_cammand.append(1)
+        else:
+            valve_cammand.append(0)
+        if request.data["cValve2"] == True:
+            valve_cammand.append(1)
+        else:
+            valve_cammand.append(0)
+        if request.data["fanAir1"] == True:
+            fan_command.append(1)
+        else:
+            fan_command.append(0)
+
+        if request.data["fanAir2"] == True:
+            fan_command.append(1)
+        else:
+            fan_command.append(0)
+        z = fan_command
         try:
             if request.data["fanspeed"] == 'low':
                 fan_command.clear()
@@ -740,6 +740,25 @@ class SetConfigNode(APIView):
         print(json_object)
         client.connect('127.0.0.1', 1883)
         client.publish('scps/server/1', json_object)
+
+    def handle_valve(self, request, target):
+        request[target] = False
+        post(request)
+
+    def post(self, request):
+        if not request['cValve1'] and request['cValve1Time'] > 0:
+            Thread(target=handle_change(request, 'cValve1')).start()
+        if not request['cValve2'] and request['cValve2Time'] > 0:
+            Thread(target=handle_change(request, 'cValve2')).start()
+        if not request['fanAir1'] and request['fanAir1Time'] > 0:
+            Thread(target=handle_change(request, 'fanAir1')).start()
+        if not request['fanAir2'] and request['fanAir2Time'] > 0:
+            Thread(target=handle_change(request, 'fanAir2')).start()
+        request['cValve1'] = request['cValve1'] or not request['cValve1Time']
+        request['cValve2'] = request['cValve2'] or not request['cValve2Time']
+        request['fanAir1'] = request['fanAir1'] or not request['fanAir1Time']
+        request['fanAir2'] = request['fanAir2'] or not request['fanAir2Time']
+        post(request)
         return Response(status=status.HTTP_200_OK)
 
 
@@ -859,6 +878,8 @@ class weather(APIView):
             city_name)
         res = requests.get(url)
         data = res.json()
+        if not 'rain' in data: data['rain'] = {}
+        if not '1h' in data['rain']: data['rain']['1h'] = 0
         json_object = json.dumps(data)
         print(json_object)
         return Response(data=json_object, status=status.HTTP_200_OK)
