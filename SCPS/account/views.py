@@ -743,7 +743,7 @@ class SetConfigNode(APIView):
 
     def handle_valve(self, request, target):
         request[target] = False
-        post(request)
+        change_valves(request)
 
     def post(self, request):
         if not request['cValve1'] and request['cValve1Time'] > 0:
@@ -758,7 +758,7 @@ class SetConfigNode(APIView):
         request['cValve2'] = request['cValve2'] or not request['cValve2Time']
         request['fanAir1'] = request['fanAir1'] or not request['fanAir1Time']
         request['fanAir2'] = request['fanAir2'] or not request['fanAir2Time']
-        post(request)
+        change_valves(request)
         return Response(status=status.HTTP_200_OK)
 
 
