@@ -44,6 +44,8 @@ User = get_user_model()
 # Create your views here.
 client = mqtt.Client()
 
+Dungle_data = {}
+
 
 # redis_instance = redis.StrictRedis(host=settings.REDIS_HOST,
 #                                   port=settings.REDIS_PORT, db=0)
@@ -315,7 +317,7 @@ def nodeNewTem(Data):
                 "fanAir2": fanState2,
                 "hvac1": valveState1,
                 "hvac2": valveState2,
-                "parameter": RecieveData["numFans"],
+                "parameter": RecieveData["numFCU"],
                 "mode": mode,
                 "setPoint": RecieveData["setT"],
                 "fanAir1Temp": str(int(RecieveData["fancoilT"][0] * 100) / 100)
@@ -338,7 +340,6 @@ def nodeNewTem(Data):
         o = o + 1
         if o < xl - xk + 1:
             continue
-        print("jkdfls")
         if RecieveData.HomeTemperature + 2 < RecieveData.SetPointTemperature:
             data.append([str(RecieveData.Node.id), "#0000ff"])
             # data = [[str(l), "#0000ff"],["0", "#ffc0cb"]]
@@ -396,7 +397,9 @@ def ReciveMqtt2(Data):
     dateTimeNow = datetime(timeZone.year, timeZone.month, timeZone.day, timeZone.hour, timeZone.minute, timeZone.second,
                            0)
 
+    global Dungle_data
     print(Data)
+    Dungle_data = Data
     for recieveData in Data["data"]:
         nodes = NodeStation()
         nodeid = recieveData["id"]
@@ -503,8 +506,9 @@ def MqttRun():
     client.on_message = on_message
     client.connect('127.0.0.1', 1883)
     client.subscribe("scps/client/2")
-    client.loop_forever()
+    client.loop_start() #this works
 
+MqttRun()
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
@@ -563,6 +567,17 @@ class LogoutAPIView(generics.GenericAPIView):
         serializer.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class sendDungleData(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        global Dungle_data
+        dry = Dungle_data['data'][0]['homeT']
+        wet = Dungle_data['data'][0]['fancoilT'][0]
+        data = {'dry_temp': dry,
+                'wet_temp': wet}
+        return Response(data=data, status=status.HTTP_200_OK)
 
 
 class sendLastData(APIView):
