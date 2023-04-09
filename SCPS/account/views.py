@@ -44,7 +44,7 @@ User = get_user_model()
 # Create your views here.
 client = mqtt.Client()
 
-Dungle_data = {}
+Dungle_data = {'data': [{'homeT': 0, 'fancoilT': [0]}]}
 
 
 # redis_instance = redis.StrictRedis(host=settings.REDIS_HOST,
