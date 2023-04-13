@@ -289,7 +289,7 @@ def nodeNewTem(Data):
         analog1 = ""
         analog2 = ""
         print(RecieveData["light"])
-        if RecieveData["light"] == -1 or RecieveData["light"] == 65535:
+        if RecieveData["light"] == -1 or RecieveData["light"] == 65535 or RecieveData['light'] is None:
             light = "Null"
         else:
             light = str(int(RecieveData["light"] * 100) / 100)
@@ -442,7 +442,10 @@ def ReciveMqtt2(Data):
         # nodes.valveState2=t["valveState"][1]
         nodes.analog1 = recieveData["analogSensors"][0]
         nodes.analog2 = recieveData["analogSensors"][1]
-        nodes.light = int(recieveData["light"] * 100) / 100
+        try:
+            nodes.light = int(recieveData["light"] * 100) / 100
+        except:
+            nodes.light = 0
 
         if recieveData["present"] < 5:
             nodes.LastTime = dateTimeNow
@@ -717,21 +720,21 @@ class SetConfigNode(APIView):
         else:
             fan_command.append(0)
         z = fan_command
-        try:
-            if request["fanspeed"] == 'low':
-                fan_command.clear()
-                fan_command.append(0)
-                fan_command.append(0)
-            if request["fanspeed"] == 'medium':
-                fan_command.clear()
-                fan_command.append(1)
-                fan_command.append(0)
-            if request["fanspeed"] == 'high':
-                fan_command.clear()
-                fan_command.append(0)
-                fan_command.append(1)
-        except:
-            pass
+        # try:
+        #     if request["fanspeed"] == 'low':
+        #         fan_command.clear()
+        #         fan_command.append(0)
+        #         fan_command.append(0)
+        #     if request["fanspeed"] == 'medium':
+        #         fan_command.clear()
+        #         fan_command.append(1)
+        #         fan_command.append(0)
+        #     if request["fanspeed"] == 'high':
+        #         fan_command.clear()
+        #         fan_command.append(0)
+        #         fan_command.append(1)
+        # except:
+        #     pass
 
         client = mqtt.Client()
         z = Node.objects.filter(id=int(request["nodeid"]))[0].MacAddress
@@ -747,15 +750,17 @@ class SetConfigNode(APIView):
                     "workmode": c,
                     "permission": b,
                     "hvac": 1,
+                    "speed": 1,
                     "fan_command": fan_command,
                 }
             ],
             "equ": {}
         }
+        print('inam bekhatere roya', z)
         json_object = json.dumps(dictsend)
         print(json_object)
-        client.connect('127.0.0.1', 1883)
-        client.publish('scps/server/1', json_object)
+        client.connect('91.98.15.243', 1883)
+        client.publish('scps/server/2', json_object)
 
     def handle_valve(self, timer, request, target):
         time.sleep(timer)
@@ -764,23 +769,22 @@ class SetConfigNode(APIView):
 
     def post(self, request):
         request = request.data
-        print(request)
         if not request['cValve1'] and request['cValve1Time'] > 0:
             temp_req = copy.deepcopy(request)
-            threading.Thread(target=self.handle_valve(request['cValve1Time'], temp_req, 'cValve1')).start()
+            threading.Thread(target=self.handle_valve, args=(request['cValve1Time'], temp_req, 'cValve1')).start()
         if not request['cValve2'] and request['cValve2Time'] > 0:
             temp_req = copy.deepcopy(request)
-            threading.Thread(target=self.handle_valve(request['cValve2Time'], temp_req, 'cValve2')).start()
+            threading.Thread(target=self.handle_valve, args=(request['cValve2Time'], temp_req, 'cValve2')).start()
         if not request['fanAir1'] and request['fanAir1Time'] > 0:
             temp_req = copy.deepcopy(request)
-            threading.Thread(target=self.handle_valve(request['fanAir1Time'], temp_req, 'fanAir1')).start()
+            threading.Thread(target=self.handle_valve, args=(request['fanAir1Time'], temp_req, 'fanAir1')).start()
         if not request['fanAir2'] and request['fanAir2Time'] > 0:
             temp_req = copy.deepcopy(request)
-            threading.Thread(target=self.handle_valve(request['fanAir2Time'], temp_req, 'fanAir2')).start()
-        request['cValve1'] = request['cValve1'] or request['cValve1Time']
-        request['cValve2'] = request['cValve2'] or request['cValve2Time']
-        request['fanAir1'] = request['fanAir1'] or request['fanAir1Time']
-        request['fanAir2'] = request['fanAir2'] or request['fanAir2Time']
+            threading.Thread(target=self.handle_valve, args=(request['fanAir2Time'], temp_req, 'fanAir2')).start()
+        request['cValve1'] = request['cValve1'] or bool(request['cValve1Time'])
+        request['cValve2'] = request['cValve2'] or bool(request['cValve2Time'])
+        request['fanAir1'] = request['fanAir1'] or bool(request['fanAir1Time'])
+        request['fanAir2'] = request['fanAir2'] or bool(request['fanAir2Time'])
         self.change_valves(request)
         return Response(status=status.HTTP_200_OK)
 
@@ -965,7 +969,7 @@ class ReportSecurityStation(APIView):
                     humidity = ""
                     analog1 = ""
                     analog2 = ""
-                    if i.light == -1 or i.light == 65535:
+                    if i.light == -1 or i.light == 65535 or i.light is None:
                         light = "Null"
                     else:
                         light = i.light
@@ -1030,7 +1034,7 @@ class ReportRoomTem(APIView):
                     humidity = ""
                     analog1 = ""
                     analog2 = ""
-                    if i.light == -1 or i.light == 65535:
+                    if i.light == -1 or i.light == 65535 or i.light is None:
                         light = "Null"
                     else:
                         light = int(i.light * 100) / 100
