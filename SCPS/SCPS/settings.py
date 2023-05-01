@@ -28,6 +28,23 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+        },
+    },
+}
+
 # Application definition
 # REDIS_HOST = '192.168.43.133'
 # REDIS_PORT = 6379

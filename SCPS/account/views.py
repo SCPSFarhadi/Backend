@@ -399,7 +399,7 @@ def ReciveMqtt2(Data):
                            0)
 
     global Dungle_data
-    print(Data)
+    # print(Data)
     if Data['data'][0]['id'] == '1c:9d:c2:4a:13:30':
         Dungle_data = Data
     for recieveData in Data["data"]:
@@ -498,7 +498,7 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, message):
     l = message.payload.decode()
-    print(message.payload.decode())
+    # print(message.payload.decode())
     z = json.loads(l)
     if z["type"] == "01":
         ReciveMqtt1(z)
@@ -652,11 +652,17 @@ class sendLastData(APIView):
 class SetConfigNode(APIView):
     permission_classes = [AllowAny]
 
-    def change_valves(self, request):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.request = {}
+
+    def change_valves(self):
+        request = self.request
         a = 0
         b = 0
         c = -1
         # valve_cammand = []
+        print(request)
         dictsend = {}
         # MyNode = Node.objects.get(MacAddress=request.data["nodeid"])
         # MyNode.SetPointTemperature = request.data["temp"]
@@ -720,21 +726,21 @@ class SetConfigNode(APIView):
         else:
             fan_command.append(0)
         z = fan_command
-        # try:
-        #     if request["fanspeed"] == 'low':
-        #         fan_command.clear()
-        #         fan_command.append(0)
-        #         fan_command.append(0)
-        #     if request["fanspeed"] == 'medium':
-        #         fan_command.clear()
-        #         fan_command.append(1)
-        #         fan_command.append(0)
-        #     if request["fanspeed"] == 'high':
-        #         fan_command.clear()
-        #         fan_command.append(0)
-        #         fan_command.append(1)
-        # except:
-        #     pass
+        try:
+            if request["fanspeed"] == 'low':
+                fan_command.clear()
+                fan_command.append(0)
+                fan_command.append(0)
+            if request["fanspeed"] == 'medium':
+                fan_command.clear()
+                fan_command.append(1)
+                fan_command.append(0)
+            if request["fanspeed"] == 'high':
+                fan_command.clear()
+                fan_command.append(0)
+                fan_command.append(1)
+        except:
+            pass
 
         client = mqtt.Client()
         z = Node.objects.filter(id=int(request["nodeid"]))[0].MacAddress
@@ -756,36 +762,32 @@ class SetConfigNode(APIView):
             ],
             "equ": {}
         }
-        print('inam bekhatere roya', z)
+        # print('inam bekhatere roya', z)
         json_object = json.dumps(dictsend)
         print(json_object)
-        client.connect('91.98.15.243', 1883)
+        client.connect('127.0.0.1', 1883)
         client.publish('scps/server/2', json_object)
 
-    def handle_valve(self, timer, request, target):
+    def handle_valve(self, timer, target):
         time.sleep(timer)
-        request[target] = False
-        self.change_valves(request)
+        self.request[target] = False
+        self.change_valves()
 
     def post(self, request):
-        request = request.data
-        if not request['cValve1'] and request['cValve1Time'] > 0:
-            temp_req = copy.deepcopy(request)
-            threading.Thread(target=self.handle_valve, args=(request['cValve1Time'], temp_req, 'cValve1')).start()
-        if not request['cValve2'] and request['cValve2Time'] > 0:
-            temp_req = copy.deepcopy(request)
-            threading.Thread(target=self.handle_valve, args=(request['cValve2Time'], temp_req, 'cValve2')).start()
-        if not request['fanAir1'] and request['fanAir1Time'] > 0:
-            temp_req = copy.deepcopy(request)
-            threading.Thread(target=self.handle_valve, args=(request['fanAir1Time'], temp_req, 'fanAir1')).start()
-        if not request['fanAir2'] and request['fanAir2Time'] > 0:
-            temp_req = copy.deepcopy(request)
-            threading.Thread(target=self.handle_valve, args=(request['fanAir2Time'], temp_req, 'fanAir2')).start()
-        request['cValve1'] = request['cValve1'] or bool(request['cValve1Time'])
-        request['cValve2'] = request['cValve2'] or bool(request['cValve2Time'])
-        request['fanAir1'] = request['fanAir1'] or bool(request['fanAir1Time'])
-        request['fanAir2'] = request['fanAir2'] or bool(request['fanAir2Time'])
-        self.change_valves(request)
+        self.request = request.data
+        if not self.request['cValve1'] and self.request['cValve1Time'] > 0:
+            threading.Thread(target=self.handle_valve, args=(self.request['cValve1Time'], 'cValve1')).start()
+        if not self.request['cValve2'] and self.request['cValve2Time'] > 0:
+            threading.Thread(target=self.handle_valve, args=(self.request['cValve2Time'], 'cValve2')).start()
+        if not self.request['fanAir1'] and self.request['fanAir1Time'] > 0:
+            threading.Thread(target=self.handle_valve, args=(self.request['fanAir1Time'], 'fanAir1')).start()
+        if not self.request['fanAir2'] and self.request['fanAir2Time'] > 0:
+            threading.Thread(target=self.handle_valve, args=(self.request['fanAir2Time'], 'fanAir2')).start()
+        self.request['cValve1'] = self.request['cValve1'] or bool(self.request['cValve1Time'])
+        self.request['cValve2'] = self.request['cValve2'] or bool(self.request['cValve2Time'])
+        self.request['fanAir1'] = self.request['fanAir1'] or bool(self.request['fanAir1Time'])
+        self.request['fanAir2'] = self.request['fanAir2'] or bool(self.request['fanAir2Time'])
+        self.change_valves()
         return Response(status=status.HTTP_200_OK)
 
 
@@ -835,7 +837,7 @@ class controlPanel(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        print(request.data)
+        # print(request.data)
         hvacmode = request.data['hvacmode']
         selectmode = request.data['selectmode']
         fan = request.data['fan']
