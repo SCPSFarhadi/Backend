@@ -123,6 +123,7 @@ def Graphws(z):
             links.append(o)
     data = {'graph': nodes, 'links': links}
     channel_layer = get_channel_layer()
+
     async_to_sync(channel_layer.group_send)(
         'chat_test',  # group _ name
         {
@@ -509,7 +510,7 @@ def on_message(client, userdata, message):
 def MqttRun():
     client.on_connect = on_connect
     client.on_message = on_message
-    client.connect('127.0.0.1', 1883)
+    client.connect('91.98.15.243', 1700)
     client.subscribe("scps/client/2")
     client.loop_start() #this works
 
@@ -765,7 +766,7 @@ class SetConfigNode(APIView):
         # print('inam bekhatere roya', z)
         json_object = json.dumps(dictsend)
         print(json_object)
-        client.connect('127.0.0.1', 1883)
+        client.connect('98.91.15.243', 1700)
         client.publish('scps/server/2', json_object)
 
     def handle_valve(self, timer, target):
@@ -876,7 +877,7 @@ class controlPanel(APIView):
         }
         json_object = json.dumps(dictsend)
         print(json_object)
-        client.connect('127.0.0.1', 1883)
+        client.connect('98.91.15.243', 1700)
         client.publish('scps/server/1', json_object)
         return Response(status=status.HTTP_200_OK)
 
@@ -1119,7 +1120,7 @@ class MatFiled(APIView):
             }
             json_object = json.dumps(dictsend)
             print(json_object)
-            client.connect('127.0.0.1', 1883)
+            client.connect('98.91.15.243', 1700)
             client.publish('scps/server', json_object)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
